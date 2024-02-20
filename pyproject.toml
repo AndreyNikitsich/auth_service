@@ -1,0 +1,60 @@
+[tool.poetry]
+name = "auth-service"
+version = "0.1.0"
+description = ""
+authors = ["vladmeh <vladmeh@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+sqlalchemy = {extras = ["all"], version = "^2.0.27"}
+alembic = "^1.13.1"
+redis = "^5.0.1"
+typer = {extras = ["all"], version = "^0.9.0"}
+passlib = "^1.7.4"
+asyncpg = "^0.29.0"
+pydantic = "^2.6.1"
+pydantic-settings = "^2.1.0"
+ruff = "^0.2.1"
+mypy = "^1.8.0"
+werkzeug = "^3.0.1"
+fastapi = "^0.109.2"
+uvicorn = {extras = ["standard"], version = "^0.27.1"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 120
+exclude = ["migrations"]
+
+[tool.ruff.lint]
+select = [
+    "B",  # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "E",  # pycodestyle
+    "ERA",  # eradicate
+    "F",  # pyflakes
+    "I",  # isort
+    "N",  # pep8-naming
+    "Q",  # flake8-quotes
+    "S",  # flake8-bandit
+    "T10",  # flake8-debugger
+    "W",  # pycodestyle
+]
+
+[tool.mypy]
+python_version = "3.11"
+plugins = [
+  "pydantic.mypy",
+  "sqlalchemy.ext.mypy.plugin",
+]
+follow_imports = "silent"
+warn_redundant_casts = true
+warn_unused_ignores = true
+disallow_any_generics = true
+check_untyped_defs = true
+no_implicit_reexport = true
+exclude = ["migrations", "docs"]
