@@ -21,6 +21,13 @@ class ProjectMetadataSettings(EnvSettings):
     version: str = "0.1.0"
 
 
+class TokenSettings(EnvSettings):
+    token_type: str = Field(default="bearer")
+    access_token_expire_minutes: int = Field(default=30)
+    secret_key: str = Field(default="secret")
+    algorithm: str = "HS256"
+
+
 class PostgresSettings(EnvSettings):
     db_user: str = Field(default="app")
     db_password: str = Field(default="123qwe")
@@ -39,6 +46,7 @@ class Settings(BaseSettings):
     project: ProjectMetadataSettings = ProjectMetadataSettings()
     pg: PostgresSettings = PostgresSettings()
     redis: RedisSettings = RedisSettings()
+    token: TokenSettings = TokenSettings()
 
 
 settings = Settings()

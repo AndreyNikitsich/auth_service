@@ -11,15 +11,19 @@ sqlalchemy = {extras = ["all"], version = "^2.0.27"}
 alembic = "^1.13.1"
 redis = "^5.0.1"
 typer = {extras = ["all"], version = "^0.9.0"}
-passlib = "^1.7.4"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 asyncpg = "^0.29.0"
-pydantic = "^2.6.1"
+pydantic = "^2.6.2"
 pydantic-settings = "^2.2.1"
 ruff = "^0.2.2"
 mypy = "^1.8.0"
 werkzeug = "^3.0.1"
 fastapi = "^0.109.2"
 uvicorn = {extras = ["standard"], version = "^0.27.1"}
+python-multipart = "^0.0.9"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+types-passlib = "^1.7.7.20240106"
+types-python-jose = "^3.3.4.20240106"
 
 
 [build-system]
@@ -44,6 +48,7 @@ select = [
     "T10",  # flake8-debugger
     "W",  # pycodestyle
 ]
+ignore = ["B904"]
 
 [tool.mypy]
 python_version = "3.11"
