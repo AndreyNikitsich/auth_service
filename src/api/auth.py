@@ -2,45 +2,63 @@ from datetime import timedelta
 from typing import Annotated
 
 from core.config.settings import settings
-from db.fake import fake_users_db
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from schemas.tokens import Token
-from schemas.users import BaseUser
-from serrvices.tokens import create_access_token, get_current_active_user
-from serrvices.users import UserManager
+from schemas.users import BaseUser, UserCreate, UserCredentials
+from services import exceptions
+from services.exceptions import ErrorCode
+from services.tokens import create_access_token
+from services.users import UserManager, get_user_manager
 
 router = APIRouter(tags=["auth"])
 
 
-@router.post("/token")
+@router.post(
+    "/register",
+    response_model=BaseUser,
+    status_code=status.HTTP_201_CREATED
+)
+async def create_user(
+        user_create: UserCreate,
+        user_manager: Annotated[UserManager, Depends(get_user_manager)]
+) -> BaseUser:
+    """Регистрация пользователя"""
+    try:
+        created_user = await user_manager.create(user_create)
+    except exceptions.UserAlreadyExistsError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ErrorCode.REGISTER_USER_ALREADY_EXISTS
+        )
+    except exceptions.InvalidPasswordError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ErrorCode.REGISTER_INVALID_PASSWORD,
+        )
+
+    return BaseUser.model_validate(created_user)
+
+
+@router.post("/login")
 async def login_for_access_token(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-        user_manager: Annotated[UserManager, Depends()]
+        user_manager: Annotated[UserManager, Depends(get_user_manager)]
 ) -> Token:
-    user = user_manager.authenticate(fake_users_db, form_data.username, form_data.password)
-    if not user:
+    credentials = UserCredentials(username=form_data.username, password=form_data.password)
+    user = await user_manager.authenticate(credentials)
+
+    if user is None or not user.is_active:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ErrorCode.LOGIN_BAD_CREDENTIALS
         )
-    access_token_expires = timedelta(minutes=settings.token.access_token_expire_minutes)
+
+    access_token_expires = timedelta(
+        minutes=settings.token.access_token_expire_minutes
+    )
     access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
+        data={"sub": str(user.id), "email": user.email},
+        expires_delta=access_token_expires
     )
     return Token(access_token=access_token, token_type=settings.token.token_type)
-
-
-@router.get("/users/me/", response_model=BaseUser)
-async def read_users_me(
-        current_user: Annotated[BaseUser, Depends(get_current_active_user)]
-):
-    return current_user
-
-
-@router.get("/users/me/items/")
-async def read_own_items(
-        current_user: Annotated[BaseUser, Depends(get_current_active_user)]
-):
-    return [{"item_id": "Foo", "owner": current_user.username}]

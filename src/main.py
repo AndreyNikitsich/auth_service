@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 
 import uvicorn
-from api import auth
+from api import auth, users
 from core.config.settings import settings
 from db import redis_db
 from db.postgres import create_database
@@ -29,6 +29,7 @@ app = FastAPI(
 )
 
 app.include_router(auth.router, tags=["auth"])
+app.include_router(users.router, tags=["users"])
 
 if __name__ == "__main__":
     uvicorn.run(

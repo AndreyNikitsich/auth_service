@@ -9,11 +9,11 @@ from jose import JWTError, jwt
 from schemas.tokens import TokenData
 from schemas.users import BaseUser
 
-from serrvices.users import UserManager
+from services.users import UserManager, get_user_manager
 
 ALGORITHM = settings.token.algorithm
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 
 def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = None):
@@ -29,7 +29,7 @@ def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = 
 
 async def get_current_user(
         token: Annotated[str, Depends(oauth2_scheme)],
-        user_manager: Annotated[UserManager, Depends()],
+        user_manager: Annotated[UserManager, Depends(get_user_manager)],
 ):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
