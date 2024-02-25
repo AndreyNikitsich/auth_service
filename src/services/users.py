@@ -5,7 +5,7 @@ from fastapi import Depends
 from models.users import User
 from passlib import pwd
 from passlib.context import CryptContext
-from schemas.users import UserCreate, UserCredentials, UserInDB
+from schemas.users import UserCreate, UserCredentials
 
 from services import exceptions
 
@@ -32,13 +32,12 @@ class UserManager:
         self.user_db = user_db
         self.password_helper = PasswordHelper()
 
-    @staticmethod
-    def get_user(db, username: str) -> UserInDB | None:
-        if username in db:
-            user_dict = db[username]
-            return UserInDB(**user_dict)
+    async def get_user(self, user_id: str) -> User:
+        user = await self.user_db.get(user_id)
+        if user is None:
+            raise exceptions.UserNotExistsError()
 
-        return None
+        return user
 
     async def create(self, user_create: UserCreate) -> User:
         """Create a user in database."""

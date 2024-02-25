@@ -2,13 +2,13 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated, Any
 
 from core.config.settings import settings
-from db.fake import fake_users_db
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
+from models.users import User
 from schemas.tokens import TokenData
-from schemas.users import BaseUser
 
+from services.exceptions import ErrorCode, UserNotExistsError
 from services.users import UserManager, get_user_manager
 
 ALGORITHM = settings.token.algorithm
@@ -33,26 +33,31 @@ async def get_current_user(
 ):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
+        detail=ErrorCode.NOT_VALIDATE_CREDENTIALS,
     )
     try:
         payload = jwt.decode(token, settings.token.secret_key, algorithms=[ALGORITHM])
-        username: str | None = payload.get("sub")
-        if username is None:
+        user_id = payload.get("sub")
+        if user_id is None:
             raise credentials_exception
-        token_data = TokenData(username=username)
+        token_data = TokenData(user_id=user_id)
     except JWTError:
         raise credentials_exception
-    user = user_manager.get_user(fake_users_db, username=token_data.username)  # type: ignore
-    if user is None:
+
+    try:
+        user = await user_manager.get_user(user_id=token_data.user_id)
+    except UserNotExistsError:
         raise credentials_exception
+
     return user
 
 
 async def get_current_active_user(
-        current_user: Annotated[BaseUser, Depends(get_current_user)]
+        current_user: Annotated[User, Depends(get_current_user)]
 ):
     if not current_user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ErrorCode.INACTIVE_USER
+        )
     return current_user
