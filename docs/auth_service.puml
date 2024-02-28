@@ -1,0 +1,176 @@
+@startuml
+header %date("dd MMMM YYYY")
+title AuthApi service
+
+object Api {
+    auth.registers(request: UserRequest): UserResponse
+    auth.login(request: UserRequest): UserResponse
+    auth.refresh_token(request: Request): Response
+    auth.logout(request: Request): Response
+
+    users.get_users(request: Request): list[UserResponse]
+    users.get_user(request: Request): UserResponse
+}
+entity UserRequest
+entity UserResponse
+class UserService{
+    create_user(data: dict): User
+    get_user(user_id: str): User
+    authenticate(credentials: dict): User
+    get_by_email(user_email: str): User
+
+    save_login_history(data: dict, request_data: dict): LoginHistory
+
+    _hashed_password(password: str): str
+}
+class JWTService{
+    assess_token
+    refresh_token
+
+    write_token(user: User, type_token: str): str
+    read_token(token: str, user_manager: UserService): User | None
+    destroy_token(token: str, user: User): None
+
+    _generate_jwt(data: dict): str
+    _decode_jwt(encoded_jwt: str): dict
+}
+entity User
+entity LoginHistory
+
+Api *-- UserRequest
+Api *-- UserResponse
+Api o.. UserService
+Api o.right. JWTService
+
+UserService *-down- User
+UserService *-down- LoginHistory
+
+@enduml
+
+@startuml
+'https://plantuml.com/sequence-diagram
+
+hide footbox
+skinparam stereotypePosition bottom
+skinparam ParticipantPadding 20
+skinparam BoxPadding 10
+'skinparam sequenceMessageAlign reverseDirection
+
+header %date("dd MMMM YYYY")
+title AuthApi service
+
+actor Client
+
+box "Api"
+participant UserApi <<routes /users/*>>
+participant AuthApi <<routes /auth/*>>
+end box
+
+box "Schemas"
+entity UserRequest
+entity UserResponse
+end box
+
+box "Services"
+participant UserService
+participant JWTService
+end box
+
+box "Models <<Postgres>>"
+entity User
+entity LoginHistory
+end box
+
+control AccessToken
+control RefreshToken
+
+== Registers ==
+
+Client -> AuthApi: **POST /auth/registers** \n-d {username, email, password, confirm_password, role}
+AuthApi -> UserRequest: validate_data = validate(request data)
+AuthApi -> UserService: user = **create_user**(validate_data)
+UserService -> UserService: hashed_password = **_hash_password(password)**
+UserService --> User: **create** User(username, email, hashed_password)
+AuthApi -> UserResponse: response_data(user)
+AuthApi -> Client: **201 Created** -d {id, username, email}
+
+== Login ==
+
+Client -> AuthApi: **POST /auth/login** \n-d {login, password}
+AuthApi -> UserService: user = **authenticate**(credentials={login, password})
+AuthApi -> JWTService: access_token = **write_token(user, 'access')**
+JWTService --> AccessToken: create access token
+activate AccessToken #green
+note over JWTService
+{
+    "header": {"alg":"HS256", "typ":"JWT"},
+    "payload": {
+        "sub": "UUID",
+        "iat": now(),
+        "exp": now() + 10 sec,
+        "role": "guest"
+    }
+}
+end note
+
+AuthApi -> JWTService: refresh_token = **write_token(user, 'refresh')**
+JWTService --> RefreshToken: create refresh token
+activate RefreshToken #green
+note over JWTService
+{
+    "header": {"alg":"HS256", "typ":"JWT"},
+    "payload": {
+        "sub": "UUID",
+        "iat": now(),
+        "exp": now() + 1 year,
+    }
+}
+end note
+
+AuthApi --> UserService: **save_login_history(user, <request data>)**
+UserService --> LoginHistory: create LoginHistory(data)
+
+AuthApi -> Client: 200 OK -d {access token, refresh token}
+
+== Requests ==
+
+Client -> UserApi: **GET /users/me** -h Authorization "bearer <access_token>"
+UserApi -> JWTService: user = **read_token(access_token)**
+UserApi -> UserResponse: response_data(user)
+Client <- UserApi: 200 OK -d {response_data}
+
+?--> AccessToken: **Expire access token**
+destroy AccessToken #green
+
+|||
+
+Client -> UserApi: **GET /users/me** -h Authorization "bearer <access_token>"
+UserApi -> JWTService: user = **read_token(access_token)**
+Client <- UserApi: 401 UNAUTHORIZED -d {message}
+
+== Refresh access token ==
+
+Client -> AuthApi: **POST /auth/refresh_token** -h Authorization "bearer <refresh_token>"
+AuthApi --> JWTService: access_token = **write_token(user)**
+JWTService --> AccessToken
+activate AccessToken #green
+
+AuthApi -> Client: 200 OK -d {access_token}
+
+== Logout ==
+
+Client -> AuthApi: **POST /auth/logout** -h Authorization "bearer <access_token>"
+AuthApi --> JWTService: user = **read_token(access_token)**
+AuthApi --> JWTService: **destroy_token(access_token, user)**
+JWTService --> AccessToken
+destroy AccessToken
+
+note right AuthApi
+? Непонятно откуда мы берем refresh_token ?
+end note
+AuthApi --> JWTService: **destroy_token(refresh_token, user)**
+JWTService --> RefreshToken
+destroy RefreshToken
+
+AuthApi -> Client: 204 NO CONTENT
+@enduml
