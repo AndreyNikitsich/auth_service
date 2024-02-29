@@ -1,12 +1,12 @@
 from typing import Annotated
 
-from db.users import UserDatabase, get_user_db
 from fastapi import Depends
-from models.users import User
 from passlib import pwd
 from passlib.context import CryptContext
-from schemas.users import UserCreate, UserCredentials
 
+from db.users import UserDatabase, get_user_db
+from models.users import User
+from schemas.users import UserCreate, UserCredentials
 from services import exceptions
 
 
@@ -14,9 +14,7 @@ class PasswordHelper:
     def __init__(self):
         self.context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-    def verify_and_update(
-            self, plain_password: str, hashed_password: str
-    ) -> tuple[bool, str | None]:
+    def verify_and_update(self, plain_password: str, hashed_password: str) -> tuple[bool, str | None]:
         return self.context.verify_and_update(plain_password, hashed_password)
 
     def hash(self, password: str) -> str:

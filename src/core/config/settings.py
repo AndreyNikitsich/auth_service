@@ -8,9 +8,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class EnvSettings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=os.path.join(BASE_DIR, ".env"),
-        env_file_encoding="utf-8",
-        extra="ignore"
+        env_file=os.path.join(BASE_DIR, ".env"), env_file_encoding="utf-8", extra="ignore"
     )
 
 
@@ -22,8 +20,8 @@ class ProjectMetadataSettings(EnvSettings):
 
 
 class TokenSettings(EnvSettings):
-    token_type: str = Field(default="bearer")
-    access_token_expire_minutes: int = Field(default=30)
+    access_token_expire_minutes: int = Field(default=15)
+    refresh_token_expire_minutes: int = Field(default=60 * 24 * 2)
     secret_key: str = Field(default="secret")
     algorithm: str = "HS256"
 

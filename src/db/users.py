@@ -1,12 +1,12 @@
 from typing import Annotated, Any, Type
 
 from fastapi import Depends
-from models.users import User
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import Executable
 
 from db.postgres import get_session
+from models.users import User
 
 
 class UserDatabase:
@@ -19,15 +19,11 @@ class UserDatabase:
         return await self._get_user(statement)
 
     async def get_by_email(self, email: str) -> User | None:
-        statement = select(self.user_model).where(
-            func.lower(self.user_model.email) == email.lower()
-        )
+        statement = select(self.user_model).where(func.lower(self.user_model.email) == email.lower())
         return await self._get_user(statement)
 
     async def get_by_username(self, username: str) -> User | None:
-        statement = select(self.user_model).where(
-            func.lower(self.user_model.username) == username.lower()
-        )
+        statement = select(self.user_model).where(func.lower(self.user_model.username) == username.lower())
         return await self._get_user(statement)
 
     async def create(self, user_create: dict[str, Any]) -> User:

@@ -1,36 +1,29 @@
-from datetime import timedelta
 from typing import Annotated
 
-from core.config.settings import settings
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
-from schemas.tokens import Token
+
+from dependensies.auth import get_auth_service
+from schemas.tokens import LoginOut
 from schemas.users import BaseUser, UserCreate, UserCredentials
 from services import exceptions
+from services.auth import AuthService
 from services.exceptions import ErrorCode
-from services.tokens import create_access_token
+from services.tokens.exceptions import BaseTokenServiceError
 from services.users import UserManager, get_user_manager
 
 router = APIRouter(tags=["auth"])
 
 
-@router.post(
-    "/register",
-    response_model=BaseUser,
-    status_code=status.HTTP_201_CREATED
-)
+@router.post("/register", response_model=BaseUser, status_code=status.HTTP_201_CREATED)
 async def create_user(
-        user_create: UserCreate,
-        user_manager: Annotated[UserManager, Depends(get_user_manager)]
+    user_create: UserCreate, user_manager: Annotated[UserManager, Depends(get_user_manager)]
 ) -> BaseUser:
     """Регистрация пользователя"""
     try:
         created_user = await user_manager.create(user_create)
     except exceptions.UserAlreadyExistsError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=ErrorCode.REGISTER_USER_ALREADY_EXISTS
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=ErrorCode.REGISTER_USER_ALREADY_EXISTS)
     except exceptions.InvalidPasswordError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -42,23 +35,97 @@ async def create_user(
 
 @router.post("/login")
 async def login_for_access_token(
-        form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-        user_manager: Annotated[UserManager, Depends(get_user_manager)]
-) -> Token:
+    response: Response,
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    user_manager: Annotated[UserManager, Depends(get_user_manager)],
+    auth_service: Annotated[AuthService, Depends(get_auth_service)],
+) -> LoginOut:
     credentials = UserCredentials(username=form_data.username, password=form_data.password)
     user = await user_manager.authenticate(credentials)
 
     if user is None or not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=ErrorCode.LOGIN_BAD_CREDENTIALS
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=ErrorCode.LOGIN_BAD_CREDENTIALS)
 
-    access_token_expires = timedelta(
-        minutes=settings.token.access_token_expire_minutes
-    )
-    access_token = create_access_token(
-        data={"sub": str(user.id), "email": user.email},
-        expires_delta=access_token_expires
-    )
-    return Token(access_token=access_token, token_type=settings.token.token_type)
+    refresh_token, access_token = await auth_service.login(str(user.id))
+
+    # TODO: remove hardcode for refresh cookies path
+    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, path="/refresh")
+    response.set_cookie(key="access_token", value=access_token)
+
+    return LoginOut(access_token=access_token, refresh_token=refresh_token)
+
+
+@router.post("/logout")
+async def logout(
+    response: Response,
+    access_token: Annotated[str, Cookie()],
+    auth_service: Annotated[AuthService, Depends(get_auth_service)],
+):
+    try:
+        await auth_service.logout(access_token)
+    except BaseTokenServiceError as e:
+        response.status_code = status.HTTP_403_FORBIDDEN
+        return e.code
+
+    response.status_code = status.HTTP_200_OK
+    response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token")
+
+    return response
+
+
+@router.post("/logout_all")
+async def logout_all(
+    response: Response,
+    access_token: Annotated[str, Cookie()],
+    auth_service: Annotated[AuthService, Depends(get_auth_service)],
+):
+    try:
+        await auth_service.logout_all(access_token)
+    except BaseTokenServiceError as e:
+        response.status_code = status.HTTP_403_FORBIDDEN
+        return e.code
+
+    response.status_code = status.HTTP_200_OK
+    response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token")
+
+    return response
+
+
+@router.post("/refresh")
+async def refresh(
+    response: Response,
+    refresh_token: Annotated[str, Cookie()],
+    auth_service: Annotated[AuthService, Depends(get_auth_service)],
+):
+    try:
+        new_refresh_token, new_access_token = await auth_service.refresh(refresh_token)
+    except BaseTokenServiceError as e:
+        response.status_code = status.HTTP_403_FORBIDDEN
+        return e.code
+
+    response.status_code = status.HTTP_200_OK
+
+    # TODO: remove hardcode for refresh cookies path
+    response.set_cookie(key="refresh_token", value=new_refresh_token, httponly=True, path="/refresh")
+    response.set_cookie(key="access_token", value=new_access_token)
+
+    return LoginOut(refresh_token=new_refresh_token, access_token=new_access_token)
+
+
+@router.post("/check_access")
+async def check_access(
+    response: Response,
+    access_token: Annotated[str, Cookie()],
+    auth_service: Annotated[AuthService, Depends(get_auth_service)],
+):
+    try:
+        await auth_service.check_access(access_token)
+    except BaseTokenServiceError as e:
+        response.status_code = status.HTTP_403_FORBIDDEN
+        return e.code
+
+    response.status_code = status.HTTP_200_OK
+
+    return response
