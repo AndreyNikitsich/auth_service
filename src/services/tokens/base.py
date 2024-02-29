@@ -14,7 +14,6 @@ class BaseTokenService:
     expires_delta_minutes: int
 
     async def validate_token(self, encoded_token: str):
-
         try:
             jws.verify(encoded_token, self.secret_key, self.algorithm)
         except JWSError as e:

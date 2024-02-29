@@ -46,7 +46,7 @@ async def login_for_access_token(
     if user is None or not user.is_active:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=ErrorCode.LOGIN_BAD_CREDENTIALS)
 
-    refresh_token, access_token = await auth_service.login(str(user.id))
+    refresh_token, access_token = await auth_service.login(user)
 
     # TODO: remove hardcode for refresh cookies path
     response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, path="/refresh")

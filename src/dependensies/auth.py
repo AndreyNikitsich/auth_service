@@ -13,6 +13,7 @@ from repositories.refresh_tokens.sqlalchemy_refresh_token import SQLAlchemyRefre
 from services.auth import AuthService
 from services.tokens.access import AccessTokenService
 from services.tokens.refresh import RefreshTokenService
+from services.users import UserManager, get_user_manager
 
 
 def get_revoked_refresh_tokens_repo(
@@ -52,5 +53,10 @@ def get_access_token_service(
 def get_auth_service(
     access_token_service: Annotated[AccessTokenService, Depends(get_access_token_service)],
     refresh_token_service: Annotated[RefreshTokenService, Depends(get_refresh_token_service)],
+    user_service: Annotated[UserManager, Depends(get_user_manager)],
 ):
-    return AuthService(access_token_service=access_token_service, refresh_token_service=refresh_token_service)
+    return AuthService(
+        access_token_service=access_token_service,
+        refresh_token_service=refresh_token_service,
+        user_service=user_service,
+    )

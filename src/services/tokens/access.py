@@ -16,7 +16,7 @@ from .exceptions import InvalidTokenPayloadError, RevokedAccessTokenError
 class AccessTokenService(BaseTokenService):
     revoked_refresh_repo: BaseRevokedRefreshTokenRepository
 
-    async def generate_token(self, user_id: str, refresh_jti: str) -> str:
+    async def generate_token(self, user_id: str, refresh_jti: str, **kwargs) -> str:
         issued_at = datetime.now(timezone.utc)
         expire = issued_at + timedelta(minutes=self.expires_delta_minutes)
 
@@ -26,6 +26,7 @@ class AccessTokenService(BaseTokenService):
             "sub": user_id,
             "iat": issued_at,
             "exp": expire,
+            **kwargs,
         }
 
         encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)

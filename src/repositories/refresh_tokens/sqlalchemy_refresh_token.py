@@ -38,7 +38,7 @@ class SQLAlchemyRefreshTokenRepository(BaseRefreshTokenRepository):
     async def delete_by_user_id(self, user_id: str) -> list[str]:
         stmt = (
             update(RefreshTokenModel)
-            .where((RefreshTokenModel.user_id == user_id) & (RefreshTokenModel.is_revoked is False))
+            .where((RefreshTokenModel.user_id == user_id) & (RefreshTokenModel.is_revoked == False))  # noqa: E712
             .values(is_revoked=True)
             .returning(RefreshTokenModel.id)
         )

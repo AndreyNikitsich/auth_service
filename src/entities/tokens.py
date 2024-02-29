@@ -17,3 +17,7 @@ class RefreshToken(JWTToken):
 
 class AccessToken(JWTToken):
     refresh_jti: str
+
+    is_superuser: bool | None
+    is_verified: bool | None
+    is_active: bool | None

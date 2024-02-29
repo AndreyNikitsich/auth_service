@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from entities.tokens import RefreshToken
 from repositories.refresh_tokens.base import BaseRevokedRefreshTokenRepository
-from repositories.refresh_tokens.sqlalchemy_refresh_token import BaseRefreshTokenRepository
+from repositories.refresh_tokens.sqlalchemy_refresh_token import BaseRefreshTokenRepository  # type: ignore
 
 from .base import BaseTokenService
 from .exceptions import InvalidTokenPayloadError, RevokedRefreshTokenError

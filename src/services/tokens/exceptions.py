@@ -12,11 +12,14 @@ class ErrorCodes(str, Enum):
 class BaseTokenServiceError(Exception):
     code: ErrorCodes
 
+
 class InvalidTokenPayloadError(BaseTokenServiceError):
     code = ErrorCodes.INVALID_TOKEN_PAYLOAD
 
+
 class InvalidTokenSignatureError(BaseTokenServiceError):
     code = ErrorCodes.INVALID_TOKEN_SIGNATURE
+
 
 class ExpiredTokenError(BaseTokenServiceError):
     code = ErrorCodes.TOKEN_EXPIRED
