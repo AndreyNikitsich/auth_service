@@ -2,9 +2,9 @@ import uuid
 from datetime import datetime
 
 from db.postgres import Base
-from sqlalchemy import Boolean, DateTime, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
 class User(Base):
@@ -35,5 +35,38 @@ class User(Base):
         DateTime, default=datetime.utcnow
     )
 
+    login_histories: Mapped[list["LoginHistory"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+
     def __repr__(self) -> str:
-        return f"<User {self.username}>"
+        return f"<User {self.username!r}>"
+
+
+class LoginHistory(Base):
+    __tablename__ = "login_histories"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False
+    )
+    useragent: Mapped[str] = mapped_column(
+        String(length=512)
+    )
+    remote_addr: Mapped[str] = mapped_column(
+        String(length=100)
+    )
+    referrer: Mapped[str] = mapped_column(
+        String(length=255)
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow
+    )
+
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
+    user: Mapped["User"] = relationship(back_populates="login_histories")
+
+    def __repr__(self) -> str:
+        return f"<LoginHistory {self.user_id!r}>"

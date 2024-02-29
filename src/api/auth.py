@@ -2,7 +2,7 @@ from datetime import timedelta
 from typing import Annotated
 
 from core.config.settings import settings
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from schemas.tokens import Token
 from schemas.users import BaseUser, UserCreate, UserCredentials
@@ -11,7 +11,7 @@ from services.exceptions import ErrorCode
 from services.tokens import create_access_token
 from services.users import UserManager, get_user_manager
 
-router = APIRouter(tags=["auth"])
+router = APIRouter(tags=["auth"], prefix="/auth")
 
 
 @router.post(
@@ -42,6 +42,7 @@ async def create_user(
 
 @router.post("/login")
 async def login_for_access_token(
+        request: Request,
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
         user_manager: Annotated[UserManager, Depends(get_user_manager)]
 ) -> Token:
@@ -61,4 +62,7 @@ async def login_for_access_token(
         data={"sub": str(user.id), "email": user.email},
         expires_delta=access_token_expires
     )
+
+    await user_manager.on_after_login(user, request)
+
     return Token(access_token=access_token, token_type=settings.token.token_type)

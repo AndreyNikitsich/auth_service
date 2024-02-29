@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from db.users import UserDatabase, get_user_db
-from fastapi import Depends
+from fastapi import Depends, Request
 from models.users import User
 from passlib import pwd
 from passlib.context import CryptContext
@@ -94,6 +94,10 @@ class UserManager:
             raise exceptions.UserNotExistsError()
 
         return user
+
+    async def on_after_login(self, user: User, request: Request) -> None:
+        """Logic after user login."""
+        await self.user_db.add_login_history(user, request)
 
 
 async def get_user_manager(user_db: Annotated[UserDatabase, Depends(get_user_db)]):

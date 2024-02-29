@@ -13,7 +13,7 @@ from services.users import UserManager, get_user_manager
 
 ALGORITHM = settings.token.algorithm
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = None):

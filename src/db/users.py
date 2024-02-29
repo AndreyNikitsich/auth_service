@@ -49,6 +49,9 @@ class UserDatabase:
         await self.session.delete(user)
         await self.session.commit()
 
+    async def add_login_history(self, user, request):
+        print(request.headers.get("user-agent"), request.client.host)
+
     async def _get_user(self, statement: Executable) -> User | None:
         results = await self.session.execute(statement)
         return results.unique().scalar_one_or_none()
