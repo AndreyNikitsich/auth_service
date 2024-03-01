@@ -11,9 +11,11 @@ from redis.asyncio import Redis
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    from models.users import User  # noqa: F401
     await create_database()
-    redis_db.redis = Redis(host=settings.redis.redis_host, port=settings.redis.redis_port)
+    redis_db.redis = Redis(
+        host=settings.redis.redis_host,
+        port=settings.redis.redis_port
+    )
 
     yield
 

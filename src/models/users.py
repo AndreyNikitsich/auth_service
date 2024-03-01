@@ -36,7 +36,7 @@ class User(Base):
     )
 
     login_histories: Mapped[list["LoginHistory"]] = relationship(
-        back_populates="user", cascade="all, delete-orphan"
+        back_populates="user", cascade="all, delete-orphan", lazy="selectin"
     )
 
     def __repr__(self) -> str:
@@ -55,7 +55,7 @@ class LoginHistory(Base):
     remote_addr: Mapped[str] = mapped_column(
         String(length=100)
     )
-    referrer: Mapped[str] = mapped_column(
+    referer: Mapped[str] = mapped_column(
         String(length=255)
     )
     created_at: Mapped[datetime] = mapped_column(

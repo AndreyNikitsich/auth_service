@@ -1,7 +1,7 @@
 from typing import Annotated, Any, Type
 
 from fastapi import Depends
-from models.users import User
+from models.users import LoginHistory, User
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import Executable
@@ -49,8 +49,12 @@ class UserDatabase:
         await self.session.delete(user)
         await self.session.commit()
 
-    async def add_login_history(self, user, request):
-        print(request.headers.get("user-agent"), request.client.host)
+    async def add_login_history(self, user: User, history_dict: dict[str, Any]) -> None:
+        login_history = LoginHistory(**history_dict)
+        self.session.add(login_history)
+        await self.session.commit()
+        await self.session.refresh(user)
+        await self.session.refresh(login_history)
 
     async def _get_user(self, statement: Executable) -> User | None:
         results = await self.session.execute(statement)
