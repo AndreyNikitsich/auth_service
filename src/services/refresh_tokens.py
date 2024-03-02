@@ -18,7 +18,10 @@ class RefreshTokenService(BaseTokenService):
 
     async def generate_token(self, user_id: str) -> str:
         to_encode = {"sub": user_id}
-        return self._generate_token(to_encode)
+        encoded_token = self._generate_token(to_encode)
+        payload = self.get_payload(encoded_token)
+        await self.repo.save(payload)
+        return encoded_token
 
     async def validate_token(self, encoded_token: str) -> RefreshToken:
         await super().validate_token(encoded_token)
