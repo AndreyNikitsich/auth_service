@@ -1,16 +1,16 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status, Request
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from ..dependencies import get_auth_service
 from schemas.tokens import LoginOut
 from schemas.users import BaseUser, UserCreate, UserCredentials
 from services import exceptions
 from services.auth import AuthService
-from services.exceptions import ErrorCode
-from services.exceptions import BaseTokenServiceError
+from services.exceptions import BaseTokenServiceError, ErrorCode
 from services.users import UserManager, get_user_manager
+
+from ..dependencies import get_auth_service
 
 router = APIRouter(tags=["auth"])
 

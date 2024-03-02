@@ -28,7 +28,7 @@ class SQLAlchemyRefreshTokenRepository:
         await self.client.commit()
 
     async def exist(self, jti: str) -> bool:
-        stmt = select(func.count()).where((RefreshTokenModel.id == jti) & (RefreshTokenModel.is_revoked == False))
+        stmt = select(func.count()).where((RefreshTokenModel.id == jti) & (RefreshTokenModel.is_revoked == False))  # noqa: E712
         result = await self.client.execute(stmt)
         count = result.scalar_one()
         return count > 0

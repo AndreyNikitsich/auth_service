@@ -5,9 +5,9 @@ from fastapi import FastAPI
 from redis.asyncio import Redis
 
 from api import router as api_router
-from settings import settings
 from db import redis_db
 from db.postgres import create_database
+from settings import settings
 
 
 @asynccontextmanager

@@ -1,5 +1,7 @@
 from pydantic import BaseModel
+
 from settings import settings
+
 
 class LoginOut(BaseModel):
     access_token: str

@@ -1,6 +1,7 @@
 import dataclasses
 
 from models.users import User
+
 from .access_tokens import AccessTokenService
 from .refresh_tokens import RefreshTokenService
 from .users import UserManager
