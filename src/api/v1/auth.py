@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 
 from ..dependencies import get_auth_service
@@ -36,6 +36,7 @@ async def create_user(
 @router.post("/login")
 async def login_for_access_token(
     response: Response,
+    request: Request,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     user_manager: Annotated[UserManager, Depends(get_user_manager)],
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
@@ -48,8 +49,7 @@ async def login_for_access_token(
 
     refresh_token, access_token = await auth_service.login(user)
 
-    # TODO: remove hardcode for refresh cookies path
-    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, path="/refresh")
+    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, path=request.url_for("refresh").path)
     response.set_cookie(key="access_token", value=access_token)
 
     return LoginOut(access_token=access_token, refresh_token=refresh_token)
@@ -94,6 +94,7 @@ async def logout_all(
 @router.post("/refresh")
 async def refresh(
     response: Response,
+    request: Request,
     refresh_token: Annotated[str, Cookie()],
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
 ):
@@ -103,9 +104,7 @@ async def refresh(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.code)
 
     response.status_code = status.HTTP_200_OK
-
-    # TODO: remove hardcode for refresh cookies path
-    response.set_cookie(key="refresh_token", value=new_refresh_token, httponly=True, path="/refresh")
+    response.set_cookie(key="refresh_token", value=new_refresh_token, httponly=True, path=request.url.path)
     response.set_cookie(key="access_token", value=new_access_token)
 
     return LoginOut(refresh_token=new_refresh_token, access_token=new_access_token)
