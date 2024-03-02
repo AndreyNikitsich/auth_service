@@ -64,14 +64,13 @@ async def logout(
     try:
         await auth_service.logout(access_token)
     except BaseTokenServiceError as e:
-        response.status_code = status.HTTP_403_FORBIDDEN
-        return e.code
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.code)
 
     response.status_code = status.HTTP_200_OK
     response.delete_cookie("access_token")
     response.delete_cookie("refresh_token")
 
-    return response
+    return {"detail": "OK"}
 
 
 @router.post("/logout_all")
@@ -83,14 +82,13 @@ async def logout_all(
     try:
         await auth_service.logout_all(access_token)
     except BaseTokenServiceError as e:
-        response.status_code = status.HTTP_403_FORBIDDEN
-        return e.code
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.code)
 
     response.status_code = status.HTTP_200_OK
     response.delete_cookie("access_token")
     response.delete_cookie("refresh_token")
 
-    return response
+    return {"detail": "OK"}
 
 
 @router.post("/refresh")
@@ -102,8 +100,7 @@ async def refresh(
     try:
         new_refresh_token, new_access_token = await auth_service.refresh(refresh_token)
     except BaseTokenServiceError as e:
-        response.status_code = status.HTTP_403_FORBIDDEN
-        return e.code
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.code)
 
     response.status_code = status.HTTP_200_OK
 
@@ -123,9 +120,8 @@ async def check_access(
     try:
         await auth_service.check_access(access_token)
     except BaseTokenServiceError as e:
-        response.status_code = status.HTTP_403_FORBIDDEN
-        return e.code
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.code)
 
     response.status_code = status.HTTP_200_OK
 
-    return response
+    return {"detail": "OK"}
