@@ -4,7 +4,7 @@ import uvicorn
 from fastapi import FastAPI
 from redis.asyncio import Redis
 
-from api import auth, users
+from api import router as api_router
 from settings import settings
 from db import redis_db
 from db.postgres import create_database
@@ -30,8 +30,7 @@ app = FastAPI(
     version=settings.project.version,
 )
 
-app.include_router(auth.router, tags=["auth"])
-app.include_router(users.router, tags=["users"])
+app.include_router(api_router, prefix="/api")
 
 if __name__ == "__main__":
     uvicorn.run(
