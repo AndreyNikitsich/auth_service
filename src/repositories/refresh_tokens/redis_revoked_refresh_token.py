@@ -2,7 +2,7 @@ import dataclasses
 
 from redis.asyncio import Redis
 
-from core.config.settings import settings
+from settings import settings
 
 
 @dataclasses.dataclass

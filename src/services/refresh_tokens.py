@@ -9,7 +9,7 @@ from entities.tokens import RefreshToken
 from repositories.refresh_tokens.redis_revoked_refresh_token import RedisRevokedRefreshTokenRepository
 from repositories.refresh_tokens.sqlalchemy_refresh_token import SQLAlchemyRefreshTokenRepository
 
-from .base import BaseTokenService
+from .base_tokens import BaseTokenService
 from .exceptions import InvalidTokenPayloadError, RevokedRefreshTokenError
 
 

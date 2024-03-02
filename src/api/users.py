@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from dependensies.users import get_current_active_user
+from .dependencies import get_current_active_user
 from schemas.users import BaseUser
 
 router = APIRouter(tags=["users"])

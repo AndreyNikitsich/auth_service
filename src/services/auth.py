@@ -1,9 +1,9 @@
 import dataclasses
 
 from models.users import User
-from services.tokens.access import AccessTokenService
-from services.tokens.refresh import RefreshTokenService
-from services.users import UserManager
+from .access_tokens import AccessTokenService
+from .refresh_tokens import RefreshTokenService
+from .users import UserManager
 
 
 @dataclasses.dataclass

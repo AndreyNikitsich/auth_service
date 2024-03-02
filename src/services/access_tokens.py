@@ -8,7 +8,7 @@ from pydantic import ValidationError
 from entities.tokens import AccessToken
 from repositories.refresh_tokens.redis_revoked_refresh_token import RedisRevokedRefreshTokenRepository
 
-from .base import BaseTokenService
+from .base_tokens import BaseTokenService
 from .exceptions import InvalidTokenPayloadError, RevokedAccessTokenError
 
 
