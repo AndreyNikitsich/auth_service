@@ -20,10 +20,11 @@ class ProjectMetadataSettings(EnvSettings):
 
 
 class TokenSettings(EnvSettings):
-    access_token_expire_minutes: int = Field(default=15)
+    access_token_expire_minutes: int = Field(default=1)
     refresh_token_expire_minutes: int = Field(default=60 * 24 * 2)
     secret_key: str = Field(default="secret")
     algorithm: str = "HS256"
+    type: str = "Bearer"
 
 
 class PostgresSettings(EnvSettings):

@@ -1,6 +1,4 @@
-import uuid
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
 
 from jose import jwt
 from pydantic import ValidationError
@@ -17,20 +15,12 @@ class AccessTokenService(BaseTokenService):
     revoked_refresh_repo: RedisRevokedRefreshTokenRepository
 
     async def generate_token(self, user_id: str, refresh_jti: str, **kwargs) -> str:
-        issued_at = datetime.now(timezone.utc)
-        expire = issued_at + timedelta(minutes=self.expires_delta_minutes)
-
         to_encode = {
-            "jti": str(uuid.uuid4()),
-            "refresh_jti": refresh_jti,
             "sub": user_id,
-            "iat": issued_at,
-            "exp": expire,
+            "refresh_jti": refresh_jti,
             **kwargs,
         }
-
-        encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
-        return encoded_jwt
+        return self._generate_token(to_encode)
 
     async def validate_token(self, encoded_token: str) -> AccessToken:
         await super().validate_token(encoded_token)
