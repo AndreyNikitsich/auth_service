@@ -35,8 +35,8 @@ async def create_user(
 
 @router.post("/login")
 async def login_for_access_token(
-    response: Response,
     request: Request,
+    response: Response,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     user_manager: Annotated[UserManager, Depends(get_user_manager)],
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
@@ -93,8 +93,8 @@ async def logout_all(
 
 @router.post("/refresh")
 async def refresh(
-    response: Response,
     request: Request,
+    response: Response,
     refresh_token: Annotated[str, Cookie()],
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
 ):
