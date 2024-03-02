@@ -1,4 +1,4 @@
-import dataclasses
+from dataclasses import dataclass
 import uuid
 from datetime import datetime, timezone, timedelta
 
@@ -9,20 +9,23 @@ from entities.tokens import JWTToken
 from .exceptions import ExpiredTokenError, InvalidTokenSignatureError
 
 
-@dataclasses.dataclass
+@dataclass
 class BaseTokenService:
     secret_key: str
+    public_key: str | None
     algorithm: str
     expires_delta_minutes: int
 
     async def validate_token(self, encoded_token: str):
+        decode_key = self.secret_key if self.public_key is None else self.public_key
+
         try:
-            jws.verify(encoded_token, self.secret_key, self.algorithm)
+            jws.verify(encoded_token, decode_key, self.algorithm)
         except JWSError as e:
             raise InvalidTokenSignatureError from e
 
         try:
-            jwt.decode(encoded_token, self.secret_key, self.algorithm)
+            jwt.decode(encoded_token, decode_key, self.algorithm)
         except JWTError as e:
             raise ExpiredTokenError from e
 

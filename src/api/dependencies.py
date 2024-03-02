@@ -36,6 +36,7 @@ def get_refresh_token_service(
 ) -> RefreshTokenService:
     return RefreshTokenService(
         secret_key=settings.token.secret_key,
+        public_key=settings.token.public_key,
         algorithm=settings.token.algorithm,
         expires_delta_minutes=settings.token.refresh_token_expire_minutes,
         repo=refresh_token_repo,
@@ -48,6 +49,7 @@ def get_access_token_service(
 ) -> AccessTokenService:
     return AccessTokenService(
         secret_key=settings.token.secret_key,
+        public_key=settings.token.public_key,
         algorithm=settings.token.algorithm,
         expires_delta_minutes=settings.token.access_token_expire_minutes,
         revoked_refresh_repo=revoked_refresh_repo,
