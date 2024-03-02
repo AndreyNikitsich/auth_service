@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.config.settings import settings
 from db.postgres import get_session
 from db.redis_db import get_redis
-from repositories.refresh_tokens.base import BaseRefreshTokenRepository, BaseRevokedRefreshTokenRepository
 from repositories.refresh_tokens.redis_revoked_refresh_token import RedisRevokedRefreshTokenRepository
 from repositories.refresh_tokens.sqlalchemy_refresh_token import SQLAlchemyRefreshTokenRepository
 from services.auth import AuthService
@@ -18,17 +17,17 @@ from services.users import UserManager, get_user_manager
 
 def get_revoked_refresh_tokens_repo(
     redis_client: Annotated[Redis, Depends(get_redis)],
-) -> BaseRevokedRefreshTokenRepository:
+) -> RedisRevokedRefreshTokenRepository:
     return RedisRevokedRefreshTokenRepository(client=redis_client)
 
 
-def get_refresh_tokens_repo(db_client: Annotated[AsyncSession, Depends(get_session)]) -> BaseRefreshTokenRepository:
+def get_refresh_tokens_repo(db_client: Annotated[AsyncSession, Depends(get_session)]) -> SQLAlchemyRefreshTokenRepository:
     return SQLAlchemyRefreshTokenRepository(client=db_client)
 
 
 def get_refresh_token_service(
-    refresh_token_repo: Annotated[BaseRefreshTokenRepository, Depends(get_refresh_tokens_repo)],
-    revoked_refresh_tokens_repo: Annotated[BaseRevokedRefreshTokenRepository, Depends(get_revoked_refresh_tokens_repo)],
+    refresh_token_repo: Annotated[SQLAlchemyRefreshTokenRepository, Depends(get_refresh_tokens_repo)],
+    revoked_refresh_tokens_repo: Annotated[RedisRevokedRefreshTokenRepository, Depends(get_revoked_refresh_tokens_repo)],
 ) -> RefreshTokenService:
     return RefreshTokenService(
         secret_key=settings.token.secret_key,
@@ -40,7 +39,7 @@ def get_refresh_token_service(
 
 
 def get_access_token_service(
-    revoked_refresh_repo: Annotated[BaseRevokedRefreshTokenRepository, Depends(get_revoked_refresh_tokens_repo)],
+    revoked_refresh_repo: Annotated[RedisRevokedRefreshTokenRepository, Depends(get_revoked_refresh_tokens_repo)],
 ) -> AccessTokenService:
     return AccessTokenService(
         secret_key=settings.token.secret_key,

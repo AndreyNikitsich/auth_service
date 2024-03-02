@@ -6,8 +6,8 @@ from jose import jwt
 from pydantic import ValidationError
 
 from entities.tokens import RefreshToken
-from repositories.refresh_tokens.base import BaseRevokedRefreshTokenRepository
-from repositories.refresh_tokens.sqlalchemy_refresh_token import BaseRefreshTokenRepository  # type: ignore
+from repositories.refresh_tokens.redis_revoked_refresh_token import RedisRevokedRefreshTokenRepository
+from repositories.refresh_tokens.sqlalchemy_refresh_token import SQLAlchemyRefreshTokenRepository
 
 from .base import BaseTokenService
 from .exceptions import InvalidTokenPayloadError, RevokedRefreshTokenError
@@ -15,8 +15,8 @@ from .exceptions import InvalidTokenPayloadError, RevokedRefreshTokenError
 
 @dataclass
 class RefreshTokenService(BaseTokenService):
-    repo: BaseRefreshTokenRepository
-    revoked_repo: BaseRevokedRefreshTokenRepository
+    repo: SQLAlchemyRefreshTokenRepository
+    revoked_repo: RedisRevokedRefreshTokenRepository
 
     async def generate_token(self, user_id: str) -> str:
         issued_at = datetime.now(timezone.utc)

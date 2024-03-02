@@ -6,11 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from entities.tokens import RefreshToken
 from models.refresh_tokens import RefreshToken as RefreshTokenModel
 
-from .base import BaseRefreshTokenRepository
-
 
 @dataclasses.dataclass
-class SQLAlchemyRefreshTokenRepository(BaseRefreshTokenRepository):
+class SQLAlchemyRefreshTokenRepository:
     client: AsyncSession
 
     async def save(self, token: RefreshToken):
@@ -30,7 +28,7 @@ class SQLAlchemyRefreshTokenRepository(BaseRefreshTokenRepository):
         await self.client.commit()
 
     async def exist(self, jti: str) -> bool:
-        stmt = select(func.count()).where((RefreshTokenModel.id == jti) & (RefreshTokenModel.is_revoked is False))
+        stmt = select(func.count()).where((RefreshTokenModel.id == jti) & (RefreshTokenModel.is_revoked == False))
         result = await self.client.execute(stmt)
         count = result.scalar_one()
         return count > 0

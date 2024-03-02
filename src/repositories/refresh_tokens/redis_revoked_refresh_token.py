@@ -4,11 +4,9 @@ from redis.asyncio import Redis
 
 from core.config.settings import settings
 
-from .base import BaseRevokedRefreshTokenRepository
-
 
 @dataclasses.dataclass
-class RedisRevokedRefreshTokenRepository(BaseRevokedRefreshTokenRepository):
+class RedisRevokedRefreshTokenRepository:
     client: Redis
     key_prefix = "revoked_refresh_token_"
     ttl = settings.token.access_token_expire_minutes * 60
