@@ -1,7 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Cookie, Depends, HTTPException
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
@@ -71,21 +70,18 @@ def get_auth_service(
     )
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
-
-
 async def get_current_user(
-    token: Annotated[str, Depends(oauth2_scheme)],
+    access_token: Annotated[str, Cookie()],
     user_manager: Annotated[UserManager, Depends(get_user_manager)],
     access_token_service: Annotated[AccessTokenService, Depends(get_access_token_service)],
-):
+) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail=ErrorCode.NOT_VALIDATE_CREDENTIALS,
     )
 
     try:
-        payload = await access_token_service.validate_token(token)
+        payload = await access_token_service.validate_token(access_token)
     except BaseTokenServiceError:
         raise credentials_exception
 
@@ -97,7 +93,7 @@ async def get_current_user(
     return user
 
 
-async def get_current_active_user(current_user: Annotated[User, Depends(get_current_user)]):
+async def get_current_active_user(current_user: Annotated[User, Depends(get_current_user)]) -> User:
     if not current_user.is_active:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=ErrorCode.INACTIVE_USER)
     return current_user

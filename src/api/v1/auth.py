@@ -17,7 +17,7 @@ router = APIRouter(tags=["auth"])
 
 @router.post("/register", response_model=BaseUser, status_code=status.HTTP_201_CREATED)
 async def create_user(
-    user_create: UserCreate, user_manager: Annotated[UserManager, Depends(get_user_manager)]
+        request: Request, user_create: UserCreate, user_manager: Annotated[UserManager, Depends(get_user_manager)]
 ) -> BaseUser:
     """Регистрация пользователя"""
     try:
@@ -48,6 +48,7 @@ async def login_for_access_token(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=ErrorCode.LOGIN_BAD_CREDENTIALS)
 
     refresh_token, access_token = await auth_service.login(user)
+    await user_manager.on_after_login(user, request)
 
     response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, path=request.url_for("refresh").path)
     response.set_cookie(key="access_token", value=access_token)

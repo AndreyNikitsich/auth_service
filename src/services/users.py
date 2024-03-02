@@ -1,12 +1,12 @@
 from typing import Annotated
 
-from db.users import UserDatabase, get_user_db
 from fastapi import Depends, Request
-from models.users import User
 from passlib import pwd
 from passlib.context import CryptContext
-from schemas.users import CreateLoginHistory, UserCreate, UserCredentials
 
+from db.users import UserDatabase, get_user_db
+from models.users import User
+from schemas.users import CreateLoginHistory, UserCreate, UserCredentials
 from services import exceptions
 
 

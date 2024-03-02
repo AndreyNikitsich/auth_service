@@ -1,12 +1,12 @@
 from typing import Annotated, Any, Type
 
 from fastapi import Depends
-from models.users import LoginHistory, User
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import Executable
 
 from db.postgres import get_session
+from models.users import LoginHistory, User
 
 
 class UserDatabase:

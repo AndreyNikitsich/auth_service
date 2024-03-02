@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from schemas.users import BaseUser
+from schemas.users import BaseUser, LoginHistory, UserLoginHistory
 
 from ..dependencies import get_current_active_user
 

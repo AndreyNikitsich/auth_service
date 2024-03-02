@@ -1,6 +1,7 @@
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
 from jose import JWSError, JWTError, jws, jwt
 
@@ -29,7 +30,7 @@ class BaseTokenService:
         except JWTError as e:
             raise ExpiredTokenError from e
 
-    def _generate_token(self, extra_payload: dict) -> str:
+    def _generate_token(self, extra_payload: dict[str, Any]) -> str:
         issued_at = datetime.now(timezone.utc)
         expire = issued_at + timedelta(minutes=self.expires_delta_minutes)
 
