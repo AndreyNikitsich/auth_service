@@ -4,7 +4,6 @@ from pydantic import BaseModel
 
 
 class JWTToken(BaseModel):
-    encoded_token: str | None = None
     jti: str
     sub: str
     iat: datetime
