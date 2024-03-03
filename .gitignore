@@ -170,3 +170,7 @@ cython_debug/
 # ruff
 .ruff_cache/
 
+*.key
+*.key.pub
+*.local.yml
+

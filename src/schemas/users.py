@@ -34,6 +34,6 @@ class UserCredentials(BaseModel):
 
 class CreateLoginHistory(BaseModel):
     user_id: UUID
-    useragent: str
-    referer: str
-    remote_addr: str
+    useragent: str | None = None
+    referer: str | None = None
+    remote_addr: str | None = None

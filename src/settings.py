@@ -22,8 +22,8 @@ class ProjectMetadataSettings(EnvSettings):
 class TokenSettings(EnvSettings):
     access_token_expire_minutes: int = Field(default=15)
     refresh_token_expire_minutes: int = Field(default=60 * 24 * 2)
-    secret_key: str = Field(default="secret")
-    public_key: str | None = None
+    secret_key: str = Field(default="")
+    public_key: str = Field(default="")
     algorithm: str = "RS256"
     type: str = "Bearer"
 
