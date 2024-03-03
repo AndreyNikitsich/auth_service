@@ -14,9 +14,6 @@ class User(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False
     )
-    username: Mapped[str] = mapped_column(
-        String(255), unique=True, nullable=False
-    )
     email: Mapped[str] = mapped_column(
         String(length=320), unique=True, index=True, nullable=False
     )
@@ -37,11 +34,14 @@ class User(Base):
     )
 
     login_histories: Mapped[list["LoginHistory"]] = relationship(
-        back_populates="user", cascade="all, delete-orphan", lazy="selectin"
+        back_populates="user",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+        order_by="LoginHistory.created_at"
     )
 
     def __repr__(self) -> str:
-        return f"<User {self.username!r}>"
+        return f"<User {self.id!r}>"
 
 
 class LoginHistory(Base):
@@ -62,12 +62,9 @@ class LoginHistory(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow
     )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
-    )
 
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
     user: Mapped["User"] = relationship(back_populates="login_histories")
 
     def __repr__(self) -> str:
-        return f"<LoginHistory {self.user_id!r}>"
+        return f"<LoginHistory {self.id!r}>"

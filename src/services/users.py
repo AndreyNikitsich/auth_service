@@ -6,7 +6,7 @@ from passlib.context import CryptContext
 
 from db.users import UserDatabase, get_user_db
 from models.users import User
-from schemas.users import CreateLoginHistory, UserCreate, UserCredentials
+from schemas.users import CreateLoginHistory, UserCredentials
 from services import exceptions
 
 
@@ -39,7 +39,7 @@ class UserManager:
 
         return user
 
-    async def create(self, user_create: UserCreate) -> User:
+    async def create(self, user_create: UserCredentials) -> User:
         """Create a user in database."""
         existing_user = await self.user_db.get_by_email(user_create.email)
         if existing_user is not None:
@@ -67,7 +67,7 @@ class UserManager:
         Will automatically upgrade password hash if necessary.
         """
         try:
-            user = await self.get_by_email(credentials.username)
+            user = await self.get_by_email(credentials.email)
         except exceptions.UserNotExistsError:
             # Run the hasher to mitigate timing attack
             # Inspired from Django: https://code.djangoproject.com/ticket/20760

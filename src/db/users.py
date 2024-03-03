@@ -24,12 +24,6 @@ class UserDatabase:
         )
         return await self._get_user(statement)
 
-    async def get_by_username(self, username: str) -> User | None:
-        statement = select(self.user_model).where(
-            func.lower(self.user_model.username) == username.lower()
-        )
-        return await self._get_user(statement)
-
     async def create(self, user_create: dict[str, Any]) -> User:
         user = self.user_model(**user_create)
         self.session.add(user)
