@@ -4,7 +4,7 @@ from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response
 from fastapi.security import OAuth2PasswordRequestForm
 
 from schemas.tokens import LoginOut
-from schemas.users import BaseUser, UserCreate, UserCredentials
+from schemas.users import BaseUser, UserCredentials
 from services import exceptions
 from services.auth import AuthService
 from services.exceptions import BaseTokenServiceError, ErrorCode
@@ -12,12 +12,12 @@ from services.users import UserManager, get_user_manager
 
 from ..dependencies import get_auth_service
 
-router = APIRouter(tags=["auth"])
+router = APIRouter(tags=["auth"], prefix="/auth")
 
 
 @router.post("/register", response_model=BaseUser, status_code=status.HTTP_201_CREATED)
 async def create_user(
-        request: Request, user_create: UserCreate, user_manager: Annotated[UserManager, Depends(get_user_manager)]
+    user_create: UserCredentials, user_manager: Annotated[UserManager, Depends(get_user_manager)]
 ) -> BaseUser:
     """Регистрация пользователя"""
     try:
@@ -41,7 +41,7 @@ async def login_for_access_token(
     user_manager: Annotated[UserManager, Depends(get_user_manager)],
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
 ) -> LoginOut:
-    credentials = UserCredentials(username=form_data.username, password=form_data.password)
+    credentials = UserCredentials(email=form_data.username, password=form_data.password)
     user = await user_manager.authenticate(credentials)
 
     if user is None or not user.is_active:

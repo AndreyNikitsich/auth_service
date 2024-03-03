@@ -6,7 +6,7 @@ from passlib.context import CryptContext
 
 from db.users import UserDatabase, get_user_db
 from models.users import User
-from schemas.users import CreateLoginHistory, UserCreate, UserCredentials
+from schemas.users import CreateLoginHistory, UserCredentials
 from services import exceptions
 
 
@@ -14,9 +14,7 @@ class PasswordHelper:
     def __init__(self):
         self.context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-    def verify_and_update(
-            self, plain_password: str, hashed_password: str
-    ) -> tuple[bool, str | None]:
+    def verify_and_update(self, plain_password: str, hashed_password: str) -> tuple[bool, str | None]:
         return self.context.verify_and_update(plain_password, hashed_password)
 
     def hash(self, password: str) -> str:
@@ -39,7 +37,7 @@ class UserManager:
 
         return user
 
-    async def create(self, user_create: UserCreate) -> User:
+    async def create(self, user_create: UserCredentials) -> User:
         """Create a user in database."""
         existing_user = await self.user_db.get_by_email(user_create.email)
         if existing_user is not None:
@@ -67,7 +65,7 @@ class UserManager:
         Will automatically upgrade password hash if necessary.
         """
         try:
-            user = await self.get_by_email(credentials.username)
+            user = await self.get_by_email(credentials.email)
         except exceptions.UserNotExistsError:
             # Run the hasher to mitigate timing attack
             # Inspired from Django: https://code.djangoproject.com/ticket/20760
@@ -101,7 +99,7 @@ class UserManager:
             user_id=user.id,
             useragent=request.headers.get("user-agent"),
             referer=request.headers.get("referer"),
-            remote_addr=request.client.host if request.client else None
+            remote_addr=request.client.host if request.client else None,
         )
         await self.user_db.add_login_history(user, history.model_dump())
 

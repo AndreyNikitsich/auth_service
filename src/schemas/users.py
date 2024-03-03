@@ -6,7 +6,6 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 class BaseUser(BaseModel):
     id: UUID
-    username: str
     email: EmailStr
     is_active: bool = True
     is_superuser: bool = False
@@ -28,23 +27,13 @@ class UserLoginHistory(BaseUser):
     login_histories: list[LoginHistory]
 
 
-class UserCreate(BaseModel):
-    username: str
-    email: EmailStr
-    password: str
-
-
-class UserInDB(BaseUser):
-    hashed_password: str
-
-
 class UserCredentials(BaseModel):
-    username: str
+    email: str
     password: str
 
 
 class CreateLoginHistory(BaseModel):
     user_id: UUID
-    useragent: str
-    referer: str
-    remote_addr: str
+    useragent: str | None = None
+    referer: str | None = None
+    remote_addr: str | None = None
