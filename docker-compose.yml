@@ -31,6 +31,15 @@ services:
     networks:
       - auth_backend
 
+  tests:
+    build:
+      context: tests/functional
+    entrypoint: >
+      sh -c "
+        pytest src
+      "
+    env_file: .env
+
 
 volumes:
   pg_data:
