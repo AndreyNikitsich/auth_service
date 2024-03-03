@@ -19,9 +19,7 @@ class UserDatabase:
         return await self._get_user(statement)
 
     async def get_by_email(self, email: str) -> User | None:
-        statement = select(self.user_model).where(
-            func.lower(self.user_model.email) == email.lower()
-        )
+        statement = select(self.user_model).where(func.lower(self.user_model.email) == email.lower())
         return await self._get_user(statement)
 
     async def create(self, user_create: dict[str, Any]) -> User:

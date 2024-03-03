@@ -14,9 +14,7 @@ class PasswordHelper:
     def __init__(self):
         self.context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-    def verify_and_update(
-            self, plain_password: str, hashed_password: str
-    ) -> tuple[bool, str | None]:
+    def verify_and_update(self, plain_password: str, hashed_password: str) -> tuple[bool, str | None]:
         return self.context.verify_and_update(plain_password, hashed_password)
 
     def hash(self, password: str) -> str:
@@ -101,7 +99,7 @@ class UserManager:
             user_id=user.id,
             useragent=request.headers.get("user-agent"),
             referer=request.headers.get("referer"),
-            remote_addr=request.client.host if request.client else None
+            remote_addr=request.client.host if request.client else None,
         )
         await self.user_db.add_login_history(user, history.model_dump())
 
