@@ -1,10 +1,9 @@
 from pydantic import BaseModel
 
+from settings import settings
 
-class Token(BaseModel):
+
+class LoginOut(BaseModel):
     access_token: str
-    token_type: str
-
-
-class TokenData(BaseModel):
-    user_id: str
+    refresh_token: str
+    type: str = settings.token.type

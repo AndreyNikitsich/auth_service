@@ -1,12 +1,12 @@
 from typing import Annotated
 
-from db.users import UserDatabase, get_user_db
-from fastapi import Depends
-from models.users import User
+from fastapi import Depends, Request
 from passlib import pwd
 from passlib.context import CryptContext
-from schemas.users import UserCreate, UserCredentials
 
+from db.users import UserDatabase, get_user_db
+from models.users import User
+from schemas.users import CreateLoginHistory, UserCreate, UserCredentials
 from services import exceptions
 
 
@@ -94,6 +94,16 @@ class UserManager:
             raise exceptions.UserNotExistsError()
 
         return user
+
+    async def on_after_login(self, user: User, request: Request) -> None:
+        """Logic after user login."""
+        history = CreateLoginHistory(
+            user_id=user.id,
+            useragent=request.headers.get("user-agent"),
+            referer=request.headers.get("referer"),
+            remote_addr=request.client.host if request.client else None
+        )
+        await self.user_db.add_login_history(user, history.model_dump())
 
 
 async def get_user_manager(user_db: Annotated[UserDatabase, Depends(get_user_db)]):
