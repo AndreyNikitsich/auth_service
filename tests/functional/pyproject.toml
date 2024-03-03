@@ -1,0 +1,41 @@
+[tool.poetry]
+name = "api-movies-test"
+version = "0.1.0"
+description = "Functional tests for auth service"
+authors = ["Andrey Nikitsich <andrey.nikitsich@gmail.com>, vladmeh <vladmeh@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pydantic-settings = "^2.1.0"
+pytest = "^7.4.4"
+pytest-asyncio = "0.21.1"
+ruff = "^0.1.14"
+pydantic = "^2.6.1"
+aiohttp = "^3.9.3"
+redis = "^5.0.2"
+psycopg2-binary = "^2.9.9"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+python_files = "test_*.py"
+
+[tool.ruff]
+line-length = 120
+select = [
+    "B",  # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "E",  # pycodestyle
+    "ERA",  # eradicate
+    "F",  # pyflakes
+    "I",  # isort
+    "N",  # pep8-naming
+    "Q",  # flake8-quotes
+    "T10",  # flake8-debugger
+    "W",  # pycodestyle
+]
+extend-ignore = ["B904"]
