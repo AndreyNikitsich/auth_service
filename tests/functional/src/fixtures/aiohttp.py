@@ -4,15 +4,15 @@ import aiohttp
 import pytest_asyncio
 
 
-@pytest_asyncio.fixture(name="make_get_request")
-def make_get_request():
-    async def inner(url: str, query_data: dict[str, Any] | None = None):
+@pytest_asyncio.fixture(name="make_post_request")
+def make_post_request():
+    async def inner(url: str, body_data: dict[str, Any] | None = None, cookies: dict | None = None) -> Any:
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=query_data) as response:
+            async with session.post(url, json=body_data, cookies=cookies) as response:
                 body = await response.json()
-                headers = response.headers
+                cookies = response.cookies
                 status = response.status
 
-        return body, headers, status
+        return body, cookies, status
 
     return inner
