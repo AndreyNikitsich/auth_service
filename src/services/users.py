@@ -37,21 +37,16 @@ class UserManager:
 
         return user
 
-    async def create(self, user_create: UserCredentials) -> User:
+    async def create(self, user_create: UserCredentials, is_superuser: bool = False) -> User:
         """Create a user in database."""
         existing_user = await self.user_db.get_by_email(user_create.email)
         if existing_user is not None:
             raise exceptions.UserAlreadyExistsError()
 
-        user_dict = user_create.model_dump(
-            exclude_unset=True,
-            exclude={
-                "id",
-                "is_superuser",
-                "is_active",
-                "is_verified",
-            },
-        )
+        user_dict = user_create.model_dump(exclude_unset=True)
+
+        user_dict["is_superuser"] = is_superuser
+
         password = user_dict.pop("password")
         user_dict["hashed_password"] = self.password_helper.hash(password)
 
