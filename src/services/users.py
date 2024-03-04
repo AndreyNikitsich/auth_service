@@ -92,9 +92,9 @@ class UserManager:
         """Logic after user login."""
         history = CreateLoginHistory(
             user_id=user.id,
-            useragent=request.headers.get("user-agent"),
-            referer=request.headers.get("referer"),
-            remote_addr=request.client.host if request.client else None,
+            useragent=request.headers.get("user-agent", ""),
+            referer=request.headers.get("referer", ""),
+            remote_addr=request.client.host if request.client else "",
         )
         await self.user_db.add_login_history(user, history.model_dump())
 
