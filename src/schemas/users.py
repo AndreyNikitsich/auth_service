@@ -28,7 +28,7 @@ class UserLoginHistory(BaseUser):
 
 
 class UserCredentials(BaseModel):
-    email: str
+    email: EmailStr
     password: str
 
 

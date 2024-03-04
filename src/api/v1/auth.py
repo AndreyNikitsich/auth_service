@@ -1,7 +1,6 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
-from fastapi.security import OAuth2PasswordRequestForm
 
 from schemas.tokens import LoginOut
 from schemas.users import BaseUser, UserCredentials
@@ -37,11 +36,10 @@ async def create_user(
 async def login_for_access_token(
     request: Request,
     response: Response,
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    credentials: UserCredentials,
     user_manager: Annotated[UserManager, Depends(get_user_manager)],
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
 ) -> LoginOut:
-    credentials = UserCredentials(email=form_data.username, password=form_data.password)
     user = await user_manager.authenticate(credentials)
 
     if user is None or not user.is_active:

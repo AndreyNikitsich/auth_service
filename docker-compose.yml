@@ -39,6 +39,8 @@ services:
         pytest src
       "
     env_file: .env
+    networks:
+      - auth_backend
 
 
 volumes:
