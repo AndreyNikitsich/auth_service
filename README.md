@@ -3,7 +3,13 @@ Auth service for movies app
 
 ## Development
 
-Generate public and private keys
+#### Local development
+- Install python 3.11 (easy way is [pyenv](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation))
+- Install [poetry](https://python-poetry.org/docs/#installing-with-pipx)
+- Run `cd src && poetry install` to create `.venv`
+- ```cp .env.example .env  # edit if necessary```
+
+#### Generate public and private keys for JWT token
 ```bash
 ssh-keygen -t rsa -b 4096 -m PEM -f jwtRS256.key
 # Don't add passphrase
@@ -41,8 +47,19 @@ WVf9052OMbRRpWlL7RU7anPkRvfSiVtCckE5MVxN0fJkaAJQrixXNJ+okzAttLMw
 ...
 ```
 
+#### Run functional tests
+```bash
+docker-compose -f docker-compose-tests.yml up
+```
+
+#### Start on production
+```bash
+cp .env.example .env  # edit if necessary
+docker-compose up
+```
+
 #### SuperUser
-Пользователь с правами `superuser`, создается через CLI 
+User with `superuser` rights is created via the CLI
 ```bash
 python ./src/cli.py --email superuser@test.tt --password password
 ```
