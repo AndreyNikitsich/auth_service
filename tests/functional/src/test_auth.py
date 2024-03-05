@@ -6,7 +6,7 @@ import pytest
 @pytest.mark.asyncio
 async def test_register_flow(make_register, clear_db):
     user_email = "test@test.com"
-    user_password = "123"
+    user_password = "password"
 
     body, _, status = await make_register(user_email, user_password)
 
@@ -20,7 +20,7 @@ async def test_register_flow(make_register, clear_db):
 @pytest.mark.asyncio
 async def test_login_flow(make_register, make_login, clear_db):
     user_email = "test3@test.com"
-    user_password = "123"
+    user_password = "password"
 
     await make_register(user_email, user_password)
     body, _, status = await make_login(user_email, user_password)
@@ -33,7 +33,7 @@ async def test_login_flow(make_register, make_login, clear_db):
 @pytest.mark.asyncio
 async def test_refresh_flow(make_register, make_login, make_refresh, clear_db):
     user_email = "test@test.com"
-    user_password = "123"
+    user_password = "password"
 
     await make_register(user_email, user_password)
     body, _, _ = await make_login(user_email, user_password)
@@ -49,7 +49,7 @@ async def test_refresh_flow(make_register, make_login, make_refresh, clear_db):
 @pytest.mark.asyncio
 async def test_logout_flow(make_register, make_login, make_logout, clear_db):
     user_email = "test@test.com"
-    user_password = "123"
+    user_password = "password"
 
     await make_register(user_email, user_password)
     body, _, _ = await make_login(user_email, user_password)
@@ -63,7 +63,7 @@ async def test_logout_flow(make_register, make_login, make_logout, clear_db):
 @pytest.mark.asyncio
 async def test_logout_all_flow(make_register, make_login, make_logout_all, make_check_access, clear_db):
     user_email = "test@test.com"
-    user_password = "123"
+    user_password = "password"
 
     await make_register(user_email, user_password)
 

@@ -14,7 +14,7 @@ async def read_users_me(current_user: Annotated[BaseUser, Depends(get_current_ac
     return current_user
 
 
-@router.get("/me/history", response_model=BaseUser)
+@router.get("/me/history")
 async def read_users_login_history(
     current_user: Annotated[UserLoginHistory, Depends(get_current_active_user)],
 ) -> list[LoginHistory]:
