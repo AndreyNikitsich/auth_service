@@ -40,3 +40,9 @@ WVf9052OMbRRpWlL7RU7anPkRvfSiVtCckE5MVxN0fJkaAJQrixXNJ+okzAttLMw
 
 ...
 ```
+
+#### SuperUser
+Пользователь с правами `superuser`, создается через CLI 
+```bash
+python ./src/cli.py --email superuser@test.tt --password password
+```

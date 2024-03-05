@@ -29,7 +29,13 @@ class UserLoginHistory(BaseUser):
 
 class UserCredentials(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(..., min_length=8, max_length=20)
+
+
+class UserCreate(UserCredentials):
+    is_active: bool = True
+    is_superuser: bool = True
+    is_verified: bool = True
 
 
 class CreateLoginHistory(BaseModel):

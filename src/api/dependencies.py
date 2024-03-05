@@ -97,3 +97,17 @@ async def get_current_active_user(current_user: Annotated[User, Depends(get_curr
     if not current_user.is_active:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=ErrorCode.INACTIVE_USER)
     return current_user
+
+
+async def get_user_or_404(
+    id: str,
+    current_user: Annotated[User, Depends(get_current_user)],
+    user_manager: Annotated[UserManager, Depends(get_user_manager)],
+) -> User:
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    try:
+        return await user_manager.get_user(id)
+    except UserNotExistsError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from e

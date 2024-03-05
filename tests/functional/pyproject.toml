@@ -22,10 +22,13 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
+addopts = "-vv -p no:cacheprovider"
 python_files = "test_*.py"
 
 [tool.ruff]
 line-length = 120
+
+[tool.ruff.lint]
 select = [
     "B",  # flake8-bugbear
     "C4",  # flake8-comprehensions
