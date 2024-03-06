@@ -17,6 +17,7 @@ class ProjectMetadataSettings(EnvSettings):
     docs_url: str = "/api/openapi"
     openapi_url: str = "/api/openapi.json"
     version: str = "0.1.0"
+    debug: bool = False
 
 
 class TokenSettings(EnvSettings):

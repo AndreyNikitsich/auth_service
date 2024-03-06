@@ -14,7 +14,7 @@ dsn = (
     f"postgresql+asyncpg://{settings.pg.db_user}:{settings.pg.db_password}@"
     f"{settings.pg.db_host}:{settings.pg.db_port}/{settings.pg.db_name}"
 )
-engine = create_async_engine(dsn, echo=True, future=True)
+engine = create_async_engine(dsn, echo=settings.project.debug, future=True)
 async_session = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 
 
