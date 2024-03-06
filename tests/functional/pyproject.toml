@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "api-movies-test"
+name = "auth-service-test"
 version = "0.1.0"
 description = "Functional tests for auth service"
 authors = ["Andrey Nikitsich <andrey.nikitsich@gmail.com>, vladmeh <vladmeh@gmail.com>"]
