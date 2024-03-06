@@ -43,3 +43,8 @@ class CreateLoginHistory(BaseModel):
     useragent: str | None = None
     referer: str | None = None
     remote_addr: str | None = None
+
+
+class PaginationParams(BaseModel):
+    page_number: int | None
+    page_size: int | None

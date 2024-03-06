@@ -43,11 +43,17 @@ class RedisSettings(EnvSettings):
     cache_expire_in_seconds: int = Field(default=(60 * 5))
 
 
+class ApiSettings(EnvSettings):
+    default_page_number: int = 1
+    default_page_size: int = 50
+
+
 class Settings(BaseSettings):
     project: ProjectMetadataSettings = ProjectMetadataSettings()
     pg: PostgresSettings = PostgresSettings()
     redis: RedisSettings = RedisSettings()
     token: TokenSettings = TokenSettings()
+    api: ApiSettings = ApiSettings()
 
 
 settings = Settings()
