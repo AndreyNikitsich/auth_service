@@ -1,11 +1,12 @@
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import Depends, Request
 from passlib import pwd
 from passlib.context import CryptContext
 
 from db.users import UserDatabase, get_user_db
-from models.users import User
+from models.users import LoginHistory, User
 from schemas.users import CreateLoginHistory, UserCredentials
 from services import exceptions
 
@@ -88,6 +89,14 @@ class UserManager:
 
         return user
 
+    async def get_login_history(
+        self, user_id: UUID, page_size: int | None, page_number: int | None
+    ) -> list[LoginHistory]:
+        """Get user login history."""
+        return await self.user_db.get_login_history(
+            user_id=user_id, limit=page_size, offset=self._get_offset(page_number=page_number, page_size=page_size)
+        )
+
     async def on_after_login(self, user: User, request: Request) -> None:
         """Logic after user login."""
         history = CreateLoginHistory(
@@ -97,6 +106,13 @@ class UserManager:
             remote_addr=request.client.host if request.client else "",
         )
         await self.user_db.add_login_history(user, history.model_dump())
+
+    @staticmethod
+    def _get_offset(page_number: int | None, page_size: int | None) -> int | None:
+        if page_number is not None and page_size is not None:
+            return (page_number - 1) * page_size
+
+        return None
 
 
 async def get_user_manager(user_db: Annotated[UserDatabase, Depends(get_user_db)]):

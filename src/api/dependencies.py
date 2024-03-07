@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Cookie, Depends, HTTPException
+from fastapi import Cookie, Depends, HTTPException, Query
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
@@ -10,6 +10,7 @@ from db.redis_db import get_redis
 from models.users import User
 from repositories.refresh_tokens.redis_revoked_refresh_token import RedisRevokedRefreshTokenRepository
 from repositories.refresh_tokens.sqlalchemy_refresh_token import SQLAlchemyRefreshTokenRepository
+from schemas.users import PaginationParams
 from services.access_tokens import AccessTokenService
 from services.auth import AuthService
 from services.exceptions import BaseTokenServiceError, ErrorCode, UserNotExistsError
@@ -111,3 +112,10 @@ async def get_user_or_404(
         return await user_manager.get_user(id)
     except UserNotExistsError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from e
+
+
+def get_pagination_params(
+    page_number: int = Query(settings.api.default_page_number, gt=0),
+    page_size: int = Query(settings.api.default_page_size, gt=0),
+) -> PaginationParams:
+    return PaginationParams(page_number=page_number, page_size=page_size)

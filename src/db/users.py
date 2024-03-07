@@ -1,4 +1,5 @@
 from typing import Annotated, Any, Type
+from uuid import UUID
 
 from fastapi import Depends
 from sqlalchemy import func, select
@@ -13,6 +14,7 @@ class UserDatabase:
     def __init__(self, session: AsyncSession, user_model: Type[User]):
         self.session = session
         self.user_model = user_model
+        self.history_model = LoginHistory
 
     async def get(self, id: str) -> User | None:
         statement = select(self.user_model).where(self.user_model.id == id)
@@ -51,6 +53,11 @@ class UserDatabase:
     async def _get_user(self, statement: Executable) -> User | None:
         results = await self.session.execute(statement)
         return results.unique().scalar_one_or_none()
+
+    async def get_login_history(self, user_id: UUID, limit: int | None, offset: int | None) -> list[LoginHistory]:
+        statement = select(self.history_model).where(self.history_model.user_id == user_id).limit(limit).offset(offset)
+        results = await self.session.execute(statement)
+        return list(results.scalars())
 
 
 async def get_user_db(session: Annotated[AsyncSession, Depends(get_session)]):
