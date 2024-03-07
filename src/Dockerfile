@@ -1,6 +1,14 @@
-FROM python:3.11-slim-buster as requirements-stage
+FROM python:3.11-slim
 
-WORKDIR /tmp
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates openssl tzdata make git \
+    gcc g++ openssh-client \
+    llvm zip unzip wget \
+    libxml2-dev libxml2-utils liblz4-dev libxslt-dev build-essential libpq-dev \
+    libgeoip-dev libjpeg-dev liblzma-dev libncurses5-dev libncursesw5-dev \
+    libffi-dev libssl-dev dnsutils liblzma-dev postgresql-client \
+    libunwind-dev procps curl vis vim grep bash gettext \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV POETRY_HOME="/opt/poetry" \
     POETRY_VIRTUALENVS_CREATE=false \
@@ -11,18 +19,14 @@ ENV POETRY_HOME="/opt/poetry" \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 
+WORKDIR /app
+
 RUN pip install --upgrade pip && \
     pip install "poetry==$POETRY_VERSION"
 
-COPY ./pyproject.toml ./poetry.lock* /tmp/
+COPY ./pyproject.toml ./poetry.lock* /app
 
 RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
-
-FROM python:3.11-slim-buster
-
-WORKDIR /app
-
-COPY --from=requirements-stage /tmp/requirements.txt /app/requirements.txt
 
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
@@ -32,4 +36,4 @@ RUN groupadd -r web && useradd -d /app -r -g web web_user \
     && chown web_user:web -R /app
 
 USER web_user
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["sh", "entrypoint.sh"]
