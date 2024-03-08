@@ -4,12 +4,19 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
+class UserRoles(BaseModel):
+    title: str
+
+    model_config = ConfigDict(from_attributes=True, extra="ignore")
+
+
 class BaseUser(BaseModel):
     id: UUID
     email: EmailStr
     is_active: bool = True
     is_superuser: bool = False
     is_verified: bool = False
+    roles: list[UserRoles]
 
     model_config = ConfigDict(from_attributes=True)
 

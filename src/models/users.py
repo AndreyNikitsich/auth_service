@@ -1,12 +1,11 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, Table, Column
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Table
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.postgres import Base
-
 
 users_roles_table = Table(
     "users_roles",
@@ -28,7 +27,7 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     roles: Mapped[list["Role"]] = relationship(
-        "Role", secondary=users_roles_table, back_populates="users", cascade="all, delete"
+        secondary=users_roles_table, back_populates="users", cascade="all, delete", lazy="selectin"
     )
 
     login_histories: Mapped[list["LoginHistory"]] = relationship(

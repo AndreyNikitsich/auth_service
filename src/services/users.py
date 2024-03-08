@@ -32,6 +32,7 @@ class UserManager:
         self.password_helper = PasswordHelper()
 
     async def get_user(self, user_id: str) -> User:
+        """Get user by id in database."""
         user = await self.user_db.get(user_id)
         if user is None:
             raise exceptions.UserNotExistsError()
