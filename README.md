@@ -7,6 +7,7 @@ Auth service for movies app
 - Install python 3.11 (easy way is [pyenv](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation))
 - Install [poetry](https://python-poetry.org/docs/#installing-with-pipx)
 - Run `cd src && poetry install` to create `.venv`
+- Activate venv ``. .venv/bin/activate``
 - ```cp .env.example .env  # edit if necessary```
 
 #### Generate public and private keys for JWT token
@@ -45,6 +46,11 @@ WVf9052OMbRRpWlL7RU7anPkRvfSiVtCckE5MVxN0fJkaAJQrixXNJ+okzAttLMw
 -----END RSA PRIVATE KEY-----"
 
 ...
+```
+
+#### Apply migrations
+```shell
+cd src && alembic upgrade head
 ```
 
 #### Run functional tests
