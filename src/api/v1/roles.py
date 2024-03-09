@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from api.dependencies import get_current_superuser
-from models.users import Role
+from models.roles import Role
 from schemas.roles import BaseRole, RoleCreate, RoleUpdate
 from services.exceptions import RoleNotExistsError
 from services.roles import RoleManager, get_role_manager

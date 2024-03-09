@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import Executable
 
 from db.postgres import get_session
-from models.users import Role
+from models.roles import Role
 
 
 class RoleDatabase:

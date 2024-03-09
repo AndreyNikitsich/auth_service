@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Depends
 
 from db.roles import RoleDatabase, get_role_db
-from models.users import Role
+from models.roles import Role
 from schemas.roles import RoleCreate, RoleUpdate
 from services import exceptions
 

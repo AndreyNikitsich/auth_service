@@ -1,7 +1,8 @@
 from datetime import datetime
+from typing import Annotated
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, StringConstraints
 
 
 class UserRoles(BaseModel):
@@ -16,7 +17,7 @@ class BaseUser(BaseModel):
     is_active: bool = True
     is_superuser: bool = False
     is_verified: bool = False
-    roles: list[UserRoles]
+    roles: list[Annotated[str, StringConstraints(max_length=255)]]
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -40,9 +41,7 @@ class UserCredentials(BaseModel):
 
 
 class UserCreate(UserCredentials):
-    is_active: bool = True
-    is_superuser: bool = True
-    is_verified: bool = True
+    roles: list[Annotated[str, StringConstraints(max_length=255)]] = Field(default=["guest"])
 
 
 class CreateLoginHistory(BaseModel):
