@@ -2,13 +2,15 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 
-from api.dependencies import get_current_superuser
+from api.dependencies import get_current_user_global, roles_required
+from api.v1.users import user_roles
 from models.roles import Role
+from schemas.auth_request import AuthRequest
 from schemas.roles import BaseRole, RoleCreate, RoleUpdate
 from services.exceptions import RoleNotExistsError
 from services.roles import RoleManager, get_role_manager
 
-router = APIRouter(tags=["roles"], prefix="/roles")
+router = APIRouter(tags=["roles"], prefix="/roles", dependencies=[Depends(get_current_user_global)])
 
 
 async def get_role_or_404(id: str, role_manager: Annotated[RoleManager, Depends(get_role_manager)]) -> Role:
@@ -23,11 +25,11 @@ async def get_role_or_404(id: str, role_manager: Annotated[RoleManager, Depends(
     response_model=BaseRole,
     name="create_roles",
     summary="Создание роли",
-    dependencies=[Depends(get_current_superuser)],
     status_code=status.HTTP_201_CREATED,
 )
+@roles_required(roles_list=[user_roles.admin, user_roles.superuser])
 async def create_role(
-    role_create: RoleCreate, role_manager: Annotated[RoleManager, Depends(get_role_manager)]
+    request: AuthRequest, role_create: RoleCreate, role_manager: Annotated[RoleManager, Depends(get_role_manager)]
 ) -> BaseRole:
     role = await role_manager.create(role_create)
     return BaseRole.model_validate(role)
@@ -38,10 +40,12 @@ async def create_role(
     response_model=list[BaseRole],
     name="list_roles",
     summary="Список ролей",
-    dependencies=[Depends(get_current_superuser)],
     status_code=status.HTTP_200_OK,
 )
-async def get_roles(role_manager: Annotated[RoleManager, Depends(get_role_manager)]) -> list[BaseRole]:
+@roles_required(roles_list=[user_roles.admin, user_roles.superuser])
+async def get_roles(
+    request: AuthRequest, role_manager: Annotated[RoleManager, Depends(get_role_manager)]
+) -> list[BaseRole]:
     results = await role_manager.get_roles()
     return [BaseRole.model_validate(result) for result in results]
 
@@ -51,10 +55,10 @@ async def get_roles(role_manager: Annotated[RoleManager, Depends(get_role_manage
     response_model=BaseRole,
     name="role",
     summary="Получение роли",
-    dependencies=[Depends(get_current_superuser)],
     status_code=status.HTTP_200_OK,
 )
-async def get_role(role: Annotated[Role, Depends(get_role_or_404)]) -> BaseRole:
+@roles_required(roles_list=[user_roles.admin, user_roles.superuser])
+async def get_role(request: AuthRequest, role: Annotated[Role, Depends(get_role_or_404)]) -> BaseRole:
     return BaseRole.model_validate(role)
 
 
@@ -63,10 +67,11 @@ async def get_role(role: Annotated[Role, Depends(get_role_or_404)]) -> BaseRole:
     response_model=BaseRole,
     name="patch_role",
     summary="Изменение роли",
-    dependencies=[Depends(get_current_superuser)],
     status_code=status.HTTP_200_OK,
 )
+@roles_required(roles_list=[user_roles.admin, user_roles.superuser])
 async def update_role(
+    request: AuthRequest,
     role_update: RoleUpdate,
     role: Annotated[Role, Depends(get_role_or_404)],
     role_manager: Annotated[RoleManager, Depends(get_role_manager)],
@@ -80,11 +85,13 @@ async def update_role(
     response_class=Response,
     name="delete_role",
     summary="Удаление роли",
-    dependencies=[Depends(get_current_superuser)],
     status_code=status.HTTP_204_NO_CONTENT,
 )
+@roles_required(roles_list=[user_roles.admin, user_roles.superuser])
 async def delete_role(
-    role: Annotated[Role, Depends(get_role_or_404)], role_manager: Annotated[RoleManager, Depends(get_role_manager)]
+    request: AuthRequest,
+    role: Annotated[Role, Depends(get_role_or_404)],
+    role_manager: Annotated[RoleManager, Depends(get_role_manager)],
 ):
     await role_manager.delete(role)
     return None

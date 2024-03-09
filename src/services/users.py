@@ -111,7 +111,7 @@ class UserManager:
         return user
 
     async def get_login_history(
-            self, user_id: UUID, page_size: int | None, page_number: int | None
+        self, user_id: UUID, page_size: int | None, page_number: int | None
     ) -> list[LoginHistory]:
         """Get user login history."""
         return await self.user_db.get_login_history(

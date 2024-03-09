@@ -1,3 +1,4 @@
+from functools import wraps
 from typing import Annotated
 
 from fastapi import Cookie, Depends, HTTPException, Query
@@ -10,13 +11,30 @@ from db.redis_db import get_redis
 from models.users import User
 from repositories.refresh_tokens.redis_revoked_refresh_token import RedisRevokedRefreshTokenRepository
 from repositories.refresh_tokens.sqlalchemy_refresh_token import SQLAlchemyRefreshTokenRepository
-from schemas.users import PaginationParams
+from schemas.auth_request import AuthRequest
+from schemas.users import BaseUser, PaginationParams
 from services.access_tokens import AccessTokenService
 from services.auth import AuthService
 from services.exceptions import BaseTokenServiceError, ErrorCode, UserNotExistsError
 from services.refresh_tokens import RefreshTokenService
 from services.users import UserManager, get_user_manager
 from settings import settings
+
+
+def roles_required(roles_list: list[str]):
+    def decorator(function):
+        @wraps(function)
+        async def wrapper(*args, **kwargs):
+            user: BaseUser = kwargs.get("request").custom_user  # type: ignore
+            if not user or user.role not in roles_list:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                )
+            return await function(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 def get_revoked_refresh_tokens_repo(
@@ -92,6 +110,10 @@ async def get_current_user(
         raise credentials_exception
 
     return user
+
+
+async def get_current_user_global(request: AuthRequest, user: Annotated[BaseUser, Depends(get_current_user)]):
+    request.custom_user = user
 
 
 async def get_current_active_user(current_user: Annotated[User, Depends(get_current_user)]) -> User:

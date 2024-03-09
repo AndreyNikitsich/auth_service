@@ -1,11 +1,18 @@
 import uuid
 from datetime import datetime
 
+from pydantic import BaseModel
 from sqlalchemy import Boolean, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.postgres import Base
+
+
+class UserRoles(BaseModel):
+    superuser: str = "superuser"
+    admin: str = "admin"
+    manager: str = "manager"
 
 
 class User(Base):

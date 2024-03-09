@@ -4,12 +4,6 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
-class UserRoles(BaseModel):
-    superuser: str = "superuser"
-    admin: str = "admin"
-    manager: str = "manager"
-
-
 class BaseUser(BaseModel):
     id: UUID
     email: EmailStr
