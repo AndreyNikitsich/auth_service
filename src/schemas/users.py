@@ -44,6 +44,15 @@ class UserCreate(UserCredentials):
     roles: list[Annotated[str, StringConstraints(max_length=255)]] = Field(default=["guest"])
 
 
+class UserUpdate(BaseModel):
+    email: EmailStr
+    is_active: bool = True
+    is_verified: bool = False
+    roles: list[Annotated[str, StringConstraints(max_length=255)]]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class CreateLoginHistory(BaseModel):
     user_id: UUID
     useragent: str | None = None

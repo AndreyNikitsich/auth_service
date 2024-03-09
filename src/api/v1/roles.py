@@ -71,8 +71,8 @@ async def update_role(
     role: Annotated[Role, Depends(get_role_or_404)],
     role_manager: Annotated[RoleManager, Depends(get_role_manager)],
 ) -> BaseRole:
-    role = await role_manager.update(role_update, role)
-    return BaseRole.model_validate(role)
+    updated_role = await role_manager.update(role_update, role)
+    return BaseRole.model_validate(updated_role)
 
 
 @router.delete(

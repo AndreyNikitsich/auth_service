@@ -1,9 +1,9 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from models.users import User
-from schemas.users import BaseUser, LoginHistory, PaginationParams, UserLoginHistory
+from schemas.users import BaseUser, LoginHistory, PaginationParams, UserLoginHistory, UserUpdate
 from services.exceptions import UserNotExistsError
 from services.users import UserManager, get_user_manager
 
@@ -23,7 +23,24 @@ async def get_user_or_404(
 
 
 @router.get(
+    "/",
+    response_model=list[BaseUser],
+    name="list_users",
+    summary="Получение списка пользователей",
+    dependencies=[Depends(get_current_superuser)],
+    status_code=status.HTTP_200_OK,
+)
+async def get_users(
+    pagination: Annotated[PaginationParams, Depends(get_pagination_params)],
+    user_manager: Annotated[UserManager, Depends(get_user_manager)],
+) -> list[BaseUser]:
+    results = await user_manager.get_users(page_size=pagination.page_size, page_number=pagination.page_number)
+    return [BaseUser.model_validate(result) for result in results]
+
+
+@router.get(
     "/me",
+    name="user_me",
     summary="Получение личных данных пользователя",
     response_model=BaseUser,
     status_code=status.HTTP_200_OK,
@@ -34,6 +51,7 @@ async def read_users_me(current_user: Annotated[User, Depends(get_current_active
 
 @router.get(
     "/me/history",
+    name="user_me_history",
     summary="Получение пользователем своей истории входов в аккаунт",
     response_model=list[LoginHistory],
     status_code=status.HTTP_200_OK,
@@ -51,21 +69,43 @@ async def read_users_login_history(
 
 @router.get(
     "/{id}",
+    name="user",
     summary="Получение данных пользователя",
     response_model=BaseUser,
     dependencies=[Depends(get_current_superuser)],
     status_code=status.HTTP_200_OK,
-    responses={
-        status.HTTP_401_UNAUTHORIZED: {
-            "description": "Missing token or inactive user.",
-        },
-        status.HTTP_403_FORBIDDEN: {
-            "description": "Not a superuser.",
-        },
-        status.HTTP_404_NOT_FOUND: {
-            "description": "The user does not exist.",
-        },
-    },
 )
 async def get_user(user: Annotated[User, Depends(get_user_or_404)]):
     return BaseUser.model_validate(user)
+
+
+@router.patch(
+    "/{id}",
+    name="patch_user",
+    response_model=BaseUser,
+    summary="Изменение данных пользователя",
+    dependencies=[Depends(get_current_superuser)],
+    status_code=status.HTTP_200_OK,
+)
+async def update_role(
+    user_update: UserUpdate,
+    user: Annotated[User, Depends(get_user_or_404)],
+    user_manager: Annotated[UserManager, Depends(get_user_manager)],
+) -> BaseUser:
+    updated_user = await user_manager.update(user_update, user)
+    return BaseUser.model_validate(updated_user)
+
+
+@router.delete(
+    "/{id}",
+    name="delete_user",
+    response_class=Response,
+    summary="Удаление пользователя",
+    dependencies=[Depends(get_current_superuser)],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_user(
+    user: Annotated[User, Depends(get_user_or_404)], user_manager: Annotated[UserManager, Depends(get_user_manager)]
+):
+    await user_manager.delete(user)
+    return None

@@ -16,6 +16,11 @@ class UserDatabase:
         self.user_model = user_model
         self.history_model = LoginHistory
 
+    async def all(self, limit: int | None, offset: int | None) -> list[User]:
+        statement = select(self.user_model).limit(limit).offset(offset).order_by(self.user_model.created_at)
+        results = await self.session.execute(statement)
+        return list(results.scalars())
+
     async def get(self, id: str) -> User | None:
         statement = select(self.user_model).where(self.user_model.id == id)
         return await self._get_user(statement)

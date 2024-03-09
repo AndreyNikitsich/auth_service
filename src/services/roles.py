@@ -21,6 +21,7 @@ class RoleManager:
         return role
 
     async def create(self, role_create: RoleCreate) -> Role:
+        """Create a role in database."""
         existing_role = await self.role_db.get_by_title(role_create.title)
         if existing_role is not None:
             raise exceptions.RoleAlreadyExistsError()
@@ -30,15 +31,18 @@ class RoleManager:
         return created_role
 
     async def update(self, role_update: RoleUpdate, role: Role) -> Role:
+        """Create a role in database."""
         role_dict = role_update.model_dump(exclude_unset=True)
         updated_role = await self.role_db.update(role, role_dict)
 
         return updated_role
 
     async def delete(self, role: Role) -> None:
+        """Delete a role in database."""
         await self.role_db.delete(role)
 
     async def get_roles(self):
+        """Get roles in database."""
         return await self.role_db.all()
 
 
