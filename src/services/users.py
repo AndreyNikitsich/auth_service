@@ -56,7 +56,7 @@ class UserManager:
         user_dict["is_superuser"] = is_superuser
 
         user_role = "superuser" if is_superuser else "guest"
-        user_dict["roles"] = [user_role]
+        user_dict["role"] = user_role
 
         password = user_dict.pop("password")
         user_dict["hashed_password"] = self.password_helper.hash(password)
@@ -111,7 +111,7 @@ class UserManager:
         return user
 
     async def get_login_history(
-        self, user_id: UUID, page_size: int | None, page_number: int | None
+            self, user_id: UUID, page_size: int | None, page_number: int | None
     ) -> list[LoginHistory]:
         """Get user login history."""
         return await self.user_db.get_login_history(

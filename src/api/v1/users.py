@@ -1,20 +1,19 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from models.users import User
 from schemas.users import BaseUser, LoginHistory, PaginationParams, UserLoginHistory, UserUpdate
 from services.exceptions import UserNotExistsError
 from services.users import UserManager, get_user_manager
-
 from ..dependencies import get_current_active_user, get_current_superuser, get_pagination_params
 
 router = APIRouter(tags=["users"], prefix="/users")
 
 
 async def get_user_or_404(
-    id: str,
-    user_manager: Annotated[UserManager, Depends(get_user_manager)],
+        id: str,
+        user_manager: Annotated[UserManager, Depends(get_user_manager)],
 ) -> User:
     try:
         return await user_manager.get_user(id)
@@ -31,8 +30,8 @@ async def get_user_or_404(
     status_code=status.HTTP_200_OK,
 )
 async def get_users(
-    pagination: Annotated[PaginationParams, Depends(get_pagination_params)],
-    user_manager: Annotated[UserManager, Depends(get_user_manager)],
+        pagination: Annotated[PaginationParams, Depends(get_pagination_params)],
+        user_manager: Annotated[UserManager, Depends(get_user_manager)],
 ) -> list[BaseUser]:
     results = await user_manager.get_users(page_size=pagination.page_size, page_number=pagination.page_number)
     return [BaseUser.model_validate(result) for result in results]
@@ -57,9 +56,9 @@ async def read_users_me(current_user: Annotated[User, Depends(get_current_active
     status_code=status.HTTP_200_OK,
 )
 async def read_users_login_history(
-    current_user: Annotated[UserLoginHistory, Depends(get_current_active_user)],
-    pagination: Annotated[PaginationParams, Depends(get_pagination_params)],
-    user_manager: Annotated[UserManager, Depends(get_user_manager)],
+        current_user: Annotated[UserLoginHistory, Depends(get_current_active_user)],
+        pagination: Annotated[PaginationParams, Depends(get_pagination_params)],
+        user_manager: Annotated[UserManager, Depends(get_user_manager)],
 ) -> list[LoginHistory]:
     results = await user_manager.get_login_history(
         user_id=current_user.id, page_size=pagination.page_size, page_number=pagination.page_number
@@ -88,24 +87,9 @@ async def get_user(user: Annotated[User, Depends(get_user_or_404)]):
     status_code=status.HTTP_200_OK,
 )
 async def update_role(
-    user_update: UserUpdate,
-    user: Annotated[User, Depends(get_user_or_404)],
-    user_manager: Annotated[UserManager, Depends(get_user_manager)],
+        user_update: UserUpdate,
+        user: Annotated[User, Depends(get_user_or_404)],
+        user_manager: Annotated[UserManager, Depends(get_user_manager)],
 ) -> BaseUser:
     updated_user = await user_manager.update(user_update, user)
     return BaseUser.model_validate(updated_user)
-
-
-@router.delete(
-    "/{id}",
-    name="delete_user",
-    response_class=Response,
-    summary="Удаление пользователя",
-    dependencies=[Depends(get_current_superuser)],
-    status_code=status.HTTP_204_NO_CONTENT,
-)
-async def delete_user(
-    user: Annotated[User, Depends(get_user_or_404)], user_manager: Annotated[UserManager, Depends(get_user_manager)]
-):
-    await user_manager.delete(user)
-    return None

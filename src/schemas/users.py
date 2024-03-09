@@ -1,23 +1,21 @@
 from datetime import datetime
-from typing import Annotated
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, StringConstraints
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class UserRoles(BaseModel):
-    title: str
-
-    model_config = ConfigDict(from_attributes=True, extra="ignore")
+    superuser: str = "superuser"
+    admin: str = "admin"
+    manager: str = "manager"
 
 
 class BaseUser(BaseModel):
     id: UUID
     email: EmailStr
+    role: str
     is_active: bool = True
-    is_superuser: bool = False
     is_verified: bool = False
-    roles: list[Annotated[str, StringConstraints(max_length=255)]]
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -41,14 +39,14 @@ class UserCredentials(BaseModel):
 
 
 class UserCreate(UserCredentials):
-    roles: list[Annotated[str, StringConstraints(max_length=255)]] = Field(default=["guest"])
+    role: str = Field(default="guest")
 
 
 class UserUpdate(BaseModel):
     email: EmailStr
     is_active: bool = True
     is_verified: bool = False
-    roles: list[Annotated[str, StringConstraints(max_length=255)]]
+    role: str
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import ARRAY, Boolean, DateTime, ForeignKey, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -19,7 +19,7 @@ class User(Base):
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
-    roles: Mapped[list[str]] = mapped_column(ARRAY(String(length=255)))
+    role: Mapped[str] = mapped_column(String(length=255))
 
     login_histories: Mapped[list["LoginHistory"]] = relationship(
         back_populates="user", cascade="all, delete-orphan", lazy="selectin", order_by="LoginHistory.created_at"
