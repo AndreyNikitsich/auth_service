@@ -23,4 +23,4 @@ class RedisRevokedRefreshTokenRepository:
 
     async def exist(self, jti: str):
         value = await self.client.get(self.key_prefix + jti)
-        return True if value is not None else False
+        return value is not None
