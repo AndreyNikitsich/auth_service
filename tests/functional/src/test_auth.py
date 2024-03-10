@@ -13,7 +13,7 @@ async def test_register_flow(make_register, clear_db):
     assert status == HTTPStatus.CREATED
     assert body["email"] == user_email
     assert body["is_active"] is True
-    assert body["is_superuser"] is False
+    assert body["role"] == "guest"
     assert body["is_verified"] is False
 
 
