@@ -7,8 +7,8 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 class BaseUser(BaseModel):
     id: UUID
     email: EmailStr
+    role: str
     is_active: bool = True
-    is_superuser: bool = False
     is_verified: bool = False
 
     model_config = ConfigDict(from_attributes=True)
@@ -33,9 +33,16 @@ class UserCredentials(BaseModel):
 
 
 class UserCreate(UserCredentials):
+    role: str = Field(default="guest")
+
+
+class UserUpdate(BaseModel):
+    email: EmailStr
     is_active: bool = True
-    is_superuser: bool = True
-    is_verified: bool = True
+    is_verified: bool = False
+    role: str
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CreateLoginHistory(BaseModel):

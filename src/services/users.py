@@ -7,7 +7,7 @@ from passlib.context import CryptContext
 
 from db.users import UserDatabase, get_user_db
 from models.users import LoginHistory, User
-from schemas.users import CreateLoginHistory, UserCredentials
+from schemas.users import CreateLoginHistory, UserCredentials, UserUpdate
 from services import exceptions
 
 
@@ -32,11 +32,18 @@ class UserManager:
         self.password_helper = PasswordHelper()
 
     async def get_user(self, user_id: str) -> User:
+        """Get user by id in database."""
         user = await self.user_db.get(user_id)
         if user is None:
             raise exceptions.UserNotExistsError()
 
         return user
+
+    async def get_users(self, page_size: int | None, page_number: int | None) -> list[User]:
+        """Get users in database."""
+        return await self.user_db.all(
+            limit=page_size, offset=self._get_offset(page_number=page_number, page_size=page_size)
+        )
 
     async def create(self, user_create: UserCredentials, is_superuser: bool = False) -> User:
         """Create a user in database."""
@@ -48,12 +55,26 @@ class UserManager:
 
         user_dict["is_superuser"] = is_superuser
 
+        user_role = "superuser" if is_superuser else "guest"
+        user_dict["role"] = user_role
+
         password = user_dict.pop("password")
         user_dict["hashed_password"] = self.password_helper.hash(password)
 
         created_user = await self.user_db.create(user_dict)
 
         return created_user
+
+    async def update(self, user_update: UserUpdate, user: User) -> User:
+        """Update a user in database."""
+        user_dict = user_update.model_dump(exclude_unset=True)
+        updated_user = await self.user_db.update(user, user_dict)
+
+        return updated_user
+
+    async def delete(self, user: User) -> None:
+        """Delete a user in database."""
+        await self.user_db.delete(user)
 
     async def authenticate(self, credentials: UserCredentials) -> User | None:
         """

@@ -7,6 +7,7 @@ class ErrorCode(str, Enum):
     LOGIN_BAD_CREDENTIALS = "LOGIN_BAD_CREDENTIALS"
     NOT_VALIDATE_CREDENTIALS = "COULD NOT VALIDATE CREDENTIALS"
     INACTIVE_USER = "INACTIVE USER"
+    IS_NOT_SUPERUSER = "IS NOT SUPERUSER"
 
     INVALID_TOKEN_SIGNATURE = "INVALID_TOKEN_SIGNATURE"  # noqa: S105
     TOKEN_EXPIRED = "TOKEN_EXPIRED"  # noqa: S105
@@ -65,3 +66,15 @@ class RefreshTokenServiceError(BaseTokenServiceError):
 
 class RevokedRefreshTokenError(RefreshTokenServiceError):
     code = ErrorCode.REVOKED_REFRESH_TOKEN
+
+
+class RolesError(Exception):
+    pass
+
+
+class RoleNotExistsError(RolesError):
+    pass
+
+
+class RoleAlreadyExistsError(RolesError):
+    pass

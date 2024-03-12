@@ -1,3 +1,4 @@
+from functools import wraps
 from typing import Annotated
 
 from fastapi import Cookie, Depends, HTTPException, Query
@@ -10,13 +11,30 @@ from db.redis_db import get_redis
 from models.users import User
 from repositories.refresh_tokens.redis_revoked_refresh_token import RedisRevokedRefreshTokenRepository
 from repositories.refresh_tokens.sqlalchemy_refresh_token import SQLAlchemyRefreshTokenRepository
-from schemas.users import PaginationParams
+from schemas.auth_request import AuthRequest
+from schemas.users import BaseUser, PaginationParams
 from services.access_tokens import AccessTokenService
 from services.auth import AuthService
 from services.exceptions import BaseTokenServiceError, ErrorCode, UserNotExistsError
 from services.refresh_tokens import RefreshTokenService
 from services.users import UserManager, get_user_manager
 from settings import settings
+
+
+def roles_required(roles_list: list[str]):
+    def decorator(function):
+        @wraps(function)
+        async def wrapper(*args, **kwargs):
+            user: BaseUser = kwargs.get("request").custom_user  # type: ignore
+            if not user or user.role not in roles_list:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                )
+            return await function(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 def get_revoked_refresh_tokens_repo(
@@ -94,24 +112,20 @@ async def get_current_user(
     return user
 
 
+async def get_current_user_global(request: AuthRequest, user: Annotated[BaseUser, Depends(get_current_user)]):
+    request.custom_user = user
+
+
 async def get_current_active_user(current_user: Annotated[User, Depends(get_current_user)]) -> User:
     if not current_user.is_active:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=ErrorCode.INACTIVE_USER)
     return current_user
 
 
-async def get_user_or_404(
-    id: str,
-    current_user: Annotated[User, Depends(get_current_user)],
-    user_manager: Annotated[UserManager, Depends(get_user_manager)],
-) -> User:
+async def get_current_superuser(current_user: Annotated[User, Depends(get_current_user)]) -> User:
     if not current_user.is_superuser:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-
-    try:
-        return await user_manager.get_user(id)
-    except UserNotExistsError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from e
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=ErrorCode.IS_NOT_SUPERUSER)
+    return current_user
 
 
 def get_pagination_params(
