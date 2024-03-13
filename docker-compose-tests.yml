@@ -38,6 +38,7 @@ services:
       sh -c "
         python wait_for_postgres.py &&
         python wait_for_redis.py &&
+        python wait_for_backend.py &&
         pytest src
       "
     env_file: .env

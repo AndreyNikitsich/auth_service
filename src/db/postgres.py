@@ -1,14 +1,9 @@
 from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase
 
+from models import Base
 from settings import settings
-
-
-class Base(DeclarativeBase):
-    pass
-
 
 dsn = (
     f"postgresql+asyncpg://{settings.pg.db_user}:{settings.pg.db_password}@"

@@ -36,6 +36,10 @@ class PostgresSettings(EnvSettings):
     db_port: int = Field(default=5432)
     db_name: str = Field(default="auth_db")
 
+    @property
+    def db_url(self) -> str:
+        return f"postgresql://{self.db_user}:{self.db_password}@{self.db_host}/{self.db_name}"
+
 
 class RedisSettings(EnvSettings):
     redis_host: str = Field(default="127.0.0.1")
