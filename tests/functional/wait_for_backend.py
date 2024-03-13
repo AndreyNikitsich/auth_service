@@ -1,6 +1,6 @@
 import time
-from urllib.error import URLError, HTTPError
-from urllib.request import urlopen, Request
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 from settings import test_settings
 
@@ -10,7 +10,7 @@ if __name__ == "__main__":
         try:
             with urlopen(httprequest) as response:
                 pass
-        except HTTPError as e:
+        except HTTPError:
             break
-        except URLError as e:
+        except URLError:
             time.sleep(1)
